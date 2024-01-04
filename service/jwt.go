@@ -6,13 +6,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type JWTService interface {
 	GenerateToken(userId string, role string) string
 	ValidateToken(token string) (*jwt.Token, error)
-	GetUserIDByToken(token string) (string, error)
+	GetPayloadInsideToken(token string) (string, string, error)
 }
 
 type jwtCustomClaim struct {
@@ -29,7 +30,7 @@ type jwtService struct {
 func NewJWTService() JWTService {
 	return &jwtService{
 		secretKey: getSecretKey(),
-		issuer:    "Template",
+		issuer:    "TEDxITS 2024",
 	}
 }
 
@@ -46,7 +47,7 @@ func (j *jwtService) GenerateToken(userId string, role string) string {
 		userId,
 		role,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 120)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * constants.JWT_EXPIRE_TIME_IN_MINUTES)),
 			Issuer:    j.issuer,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
@@ -71,13 +72,14 @@ func (j *jwtService) ValidateToken(token string) (*jwt.Token, error) {
 	return jwt.Parse(token, j.parseToken)
 }
 
-func (j *jwtService) GetUserIDByToken(token string) (string, error) {
+func (j *jwtService) GetPayloadInsideToken(token string) (string, string, error) {
 	t_Token, err := j.ValidateToken(token)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	
+
 	claims := t_Token.Claims.(jwt.MapClaims)
 	id := fmt.Sprintf("%v", claims["user_id"])
-	return id, nil
+	role := fmt.Sprintf("%v", claims["role"])
+	return id, role, nil
 }

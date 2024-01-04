@@ -5,10 +5,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Caknoooo/go-gin-clean-template/controller"
-	"github.com/Caknoooo/go-gin-clean-template/entity"
-	"github.com/Caknoooo/go-gin-clean-template/repository"
-	"github.com/Caknoooo/go-gin-clean-template/service"
+	"github.com/TEDxITS/website-backend-2024/controller"
+	"github.com/TEDxITS/website-backend-2024/entity"
+	"github.com/TEDxITS/website-backend-2024/repository"
+	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )

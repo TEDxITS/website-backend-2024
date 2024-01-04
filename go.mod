@@ -1,4 +1,4 @@
-module github.com/Caknoooo/go-gin-clean-template
+module github.com/TEDxITS/website-backend-2024
 
 go 1.20
 

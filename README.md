@@ -44,4 +44,4 @@ If You using my Template. You get some endpoints that I have set up and an archi
 
 https://documenter.getpostman.com/view/29665461/2s9YJaZQCG
 
-![image](https://github.com/Caknoooo/go-gin-clean-template/assets/92671053/5aea055b-2420-4017-9310-e1c628209d0d)
+![image](https://github.com/TEDxITS/website-backend-2024/assets/92671053/5aea055b-2420-4017-9310-e1c628209d0d)

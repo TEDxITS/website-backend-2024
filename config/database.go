@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Caknoooo/go-gin-clean-template/constants"
-	"github.com/Caknoooo/go-gin-clean-template/entity"
+	"github.com/TEDxITS/website-backend-2024/constants"
+	"github.com/TEDxITS/website-backend-2024/entity"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -29,9 +29,7 @@ func SetUpDatabaseConnection() *gorm.DB {
 	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v TimeZone=Asia/Jakarta", dbHost, dbUser, dbPass, dbName, dbPort)
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN: dsn,
-		// Menambahkan opsi berikut akan memungkinkan driver database
-		// untuk mendukung tipe data UUID secara bawaan.
+		DSN:                  dsn,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{})
 	if err != nil {
@@ -39,7 +37,9 @@ func SetUpDatabaseConnection() *gorm.DB {
 	}
 
 	if err := db.AutoMigrate(
+		&entity.Role{},
 		&entity.User{},
+		&entity.LinkShortener{},
 	); err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func SetUpDatabaseConnection() *gorm.DB {
 	return db
 }
 
-func ClosDatabaseConnection(db *gorm.DB) {
+func CloseDatabaseConnection(db *gorm.DB) {
 	dbSQL, err := db.DB()
 	if err != nil {
 		fmt.Println(err)

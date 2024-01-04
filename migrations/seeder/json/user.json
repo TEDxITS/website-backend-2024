@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Admin TEDxITS 2024",
+    "email": "admin@tedxits2024",
+    "password": "SuperSecurePassword",
+    "is_verified": true,
+    "role_id": "1c016d51-6665-470e-a260-e18af36beb8b" 
+  },
+  {
+    "name": "ordinary user",
+    "email": "user@tedxits2024",
+    "password": "SuperSecurePassword",
+    "is_verified": true,
+    "role_id": "6a78c476-8b5c-11ee-be9e-325096b39f47" 
+  }
+]

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/Caknoooo/go-gin-clean-template/config"
+	"github.com/TEDxITS/website-backend-2024/config"
 
 	"gopkg.in/gomail.v2"
 )
