@@ -1,13 +1,13 @@
 package dto
 
 type (
-	PaginationRequest struct {
+	PaginationQuery struct {
 		Search  string `form:"search"`
 		Page    int    `form:"page"`
 		PerPage int    `form:"per_page"`
 	}
 
-	PaginationResponse struct {
+	PaginationMetadata struct {
 		Page    int   `json:"page"`
 		PerPage int   `json:"per_page"`
 		MaxPage int64 `json:"max_page"`
@@ -15,14 +15,14 @@ type (
 	}
 )
 
-func (p *PaginationRequest) GetOffset() int {
+func (p *PaginationQuery) GetOffset() int {
 	return (p.Page - 1) * p.PerPage
 }
 
-func (p *PaginationResponse) GetLimit() int {
+func (p *PaginationMetadata) GetLimit() int {
 	return p.PerPage
 }
 
-func (p *PaginationResponse) GetPage() int {
+func (p *PaginationMetadata) GetPage() int {
 	return p.Page
 }
