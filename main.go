@@ -55,16 +55,14 @@ func main() {
 		and the ASP .NET will notice it the file is created
 		and stop the application. This replicate said behavior.
 	*/
-	azure.StopOnNewDeployment()
+	go azure.StopOnNewDeployment()
 
 	port := os.Getenv("HTTP_PLATFORM_PORT")
 	if port == "" {
 		port = "8888"
 	}
 
-	server.RedirectTrailingSlash = true
 	if err := server.Run(":" + port); err != nil {
 		log.Fatalf("error running server: %v", err)
 	}
-
 }
