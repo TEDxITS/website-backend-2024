@@ -46,16 +46,6 @@ func main() {
 		log.Fatalf("error migration seeder: %v", err)
 	}
 
-	port := os.Getenv("HTTP_PLATFORM_PORT")
-	if port == "" {
-		port = "8888"
-	}
-
-	server.RedirectTrailingSlash = true
-	if err := server.Run(":" + port); err != nil {
-		log.Fatalf("error running server: %v", err)
-	}
-
 	/*
 		Deployed on Azure App Service with .NET Stack.
 		The workflow will failed to deploy on updates
@@ -66,4 +56,15 @@ func main() {
 		and stop the application. This replicate said behavior.
 	*/
 	azure.StopOnNewDeployment()
+
+	port := os.Getenv("HTTP_PLATFORM_PORT")
+	if port == "" {
+		port = "8888"
+	}
+
+	server.RedirectTrailingSlash = true
+	if err := server.Run(":" + port); err != nil {
+		log.Fatalf("error running server: %v", err)
+	}
+
 }
