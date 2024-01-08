@@ -19,6 +19,9 @@ jobs:
       - name: Set up Env
         run: echo "${{ secrets.ENV_DEVELOPMENT }}" > build/.env
 
+      - name: Copy migration files
+      run: xcopy /i migrations build\migrations
+
       - name: Build
         run: go build -o build/go-app.exe -v
 
@@ -29,4 +32,4 @@ jobs:
           app-name: tedxits-dev
           # Applies to Web App only: Path to package or folder. *.zip, *.war, *.jar or a folder to deploy
           package: build/
-          publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILEDEVELOPMENT }}
+          publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE_DEVELOPMENT }}
