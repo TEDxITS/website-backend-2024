@@ -1,0 +1,35 @@
+name: Build Go app and push to Azure (Production)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Set up Env
+        run: echo "${{ secrets.ENV_PRODUCTION }}" > build/.env
+
+      - name: Copy migration files
+        run: xcopy /e /k /h /i migrations build\migrations
+
+      - name: Build
+        run: go build -o build/go-app.exe -v
+
+      - name: Deploy to Azure
+        uses: Azure/webapps-deploy@v2
+        with:
+          # Name of the Azure Web App
+          app-name: tedxits-dev
+          # Applies to Web App only: Path to package or folder. *.zip, *.war, *.jar or a folder to deploy
+          package: build/
+          publish-profile: ${{ secrets.AZUREWEBAPPPUBLISHPROFILE_PRODUCTION }}

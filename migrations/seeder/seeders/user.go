@@ -27,6 +27,7 @@ func UserSeeder(db *gorm.DB) error {
 	var listUser []entity.User
 	json.Unmarshal(jsonData, &listUser)
 
+	// only create if it does not exist
 	for _, data := range listUser {
 		var user entity.User
 		err := db.Where(&entity.User{Email: data.Email}).First(&user).Error

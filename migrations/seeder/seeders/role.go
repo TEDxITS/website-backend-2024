@@ -27,13 +27,17 @@ func RoleSeeder(db *gorm.DB) error {
 	var listRole []entity.Role
 	json.Unmarshal(jsonData, &listRole)
 
+	// only create if it does not exist
 	for _, data := range listRole {
-		if err := db.Save(&data).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				if err := db.Create(&data).Error; err != nil {
-					return err
-				}
-			} else {
+		var role entity.Role
+		err := db.Where(&entity.Role{Name: data.Name}).First(&role).Error
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		exist := db.Find(&role, "name = ?", data.Name).RowsAffected
+		if exist == 0 {
+			if err := db.Create(&data).Error; err != nil {
 				return err
 			}
 		}
