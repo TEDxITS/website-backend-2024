@@ -11,6 +11,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/routes"
 	"github.com/TEDxITS/website-backend-2024/service"
+	"github.com/TEDxITS/website-backend-2024/utils/azure"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -45,7 +46,7 @@ func main() {
 		log.Fatalf("error migration seeder: %v", err)
 	}
 
-	port := os.Getenv("GOLANG_PORT")
+	port := os.Getenv("HTTP_PLATFORM_PORT")
 	if port == "" {
 		port = "8888"
 	}
@@ -54,4 +55,15 @@ func main() {
 	if err := server.Run(":" + port); err != nil {
 		log.Fatalf("error running server: %v", err)
 	}
+
+	/*
+		Deployed on Azure App Service with .NET Stack.
+		The workflow will failed to deploy on updates
+		because the server is already running and it
+		wont lets us replace it. Normally in .NET apps
+		on azure, it will create a file called "app_offline.htm"
+		and the ASP .NET will notice it the file is created
+		and stop the application. This replicate said behavior.
+	*/
+	azure.StopOnNewDeployment()
 }
