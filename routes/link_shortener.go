@@ -13,6 +13,6 @@ func LinkShortener(route *gin.Engine, linkShortenerController controller.LinkSho
 	{
 		routes.GET("/:alias", linkShortenerController.RedirectByAlias)
 		routes.GET("", middleware.Authenticate(jwtService), middleware.OnlyAllow(constants.ENUM_ROLE_ADMIN), linkShortenerController.GetAllPagination)
-		routes.POST("", middleware.Authenticate(jwtService), middleware.OnlyAllow(constants.ENUM_ROLE_ADMIN), linkShortenerController.Create)
+		routes.POST("", middleware.Authenticate(jwtService), linkShortenerController.Create)
 	}
 }
