@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/TEDxITS/website-backend-2024/constants"
+	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -61,21 +62,23 @@ func (j *jwtService) GenerateToken(userId string, role string) string {
 	return tx
 }
 
-func (j *jwtService) parseToken(t_ *jwt.Token) (any, error) {
-	if _, ok := t_.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, fmt.Errorf("unexpected signing method %v", t_.Header["alg"])
-	}
-	return []byte(j.secretKey), nil
-}
-
 func (j *jwtService) ValidateToken(token string) (*jwt.Token, error) {
-	return jwt.Parse(token, j.parseToken)
+	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method %v", token.Header["alg"])
+		}
+		return []byte(j.secretKey), nil
+	})
 }
 
 func (j *jwtService) GetPayloadInsideToken(token string) (string, string, error) {
 	t_Token, err := j.ValidateToken(token)
 	if err != nil {
 		return "", "", err
+	}
+
+	if !t_Token.Valid {
+		return "", "", dto.ErrTokenInvalid
 	}
 
 	claims := t_Token.Claims.(jwt.MapClaims)

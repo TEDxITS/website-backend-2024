@@ -15,7 +15,8 @@ func Authenticate(jwtService service.JWTService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" {
-			abortTokenInvalid(ctx)
+			response := utils.BuildResponseFailed(dto.MESSAGE_FAILED_VERIFY_TOKEN, dto.ErrTokenNotFound.Error(), nil)
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
@@ -25,25 +26,15 @@ func Authenticate(jwtService service.JWTService) gin.HandlerFunc {
 		}
 
 		authHeader = strings.Replace(authHeader, "Bearer ", "", -1)
-		token, err := jwtService.ValidateToken(authHeader)
+		userId, userRole, err := jwtService.GetPayloadInsideToken(authHeader)
 		if err != nil {
-			var response utils.Response
 			if err.Error() == dto.ErrTokenExpired.Error() {
-				response = utils.BuildResponseFailed(dto.MESSAGE_FAILED_VERIFY_TOKEN, dto.ErrTokenExpired.Error(), nil)
+				response := utils.BuildResponseFailed(dto.MESSAGE_FAILED_VERIFY_TOKEN, dto.ErrTokenExpired.Error(), nil)
 				ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 				return
 			}
-			abortTokenInvalid(ctx)
-		}
-
-		if !token.Valid {
-			abortTokenInvalid(ctx)
-			return
-		}
-
-		userId, userRole, err := jwtService.GetPayloadInsideToken(authHeader)
-		if err != nil {
-			abortTokenInvalid(ctx)
+			response := utils.BuildResponseFailed(dto.MESSAGE_FAILED_VERIFY_TOKEN, err.Error(), nil)
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
