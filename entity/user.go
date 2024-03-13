@@ -7,13 +7,15 @@ import (
 )
 
 type User struct {
-	ID         uuid.UUID `json:"id" form:"id" gorm:"type:uuid;primary_key;default:uuid_generate_v4()" `
-	Name       string    `json:"name" form:"name"`
-	Email      string    `json:"email" form:"email"`
-	Password   string    `json:"password" form:"password"`
-	IsVerified bool      `json:"is_verified" form:"is_verified"`
-	RoleID     string    `json:"role_id" form:"role_id" gorm:"foreignKey" `
-	Role       *Role     `json:"role,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" `
+	ID       uuid.UUID `json:"id" form:"id" gorm:"type:uuid;primary_key;default:uuid_generate_v4()" `
+	RoleID   string    `json:"role_id" form:"role_id" gorm:"foreignKey" `
+	Name     string    `json:"name" form:"name"`
+	Email    string    `json:"email" form:"email"`
+	Password string    `json:"password" form:"password"`
+	Verified bool      `json:"verified" form:"verified"`
+
+	Role   *Role   `json:"role,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" `
+	Events []Event `json:"events,omitempty" gorm:"many2many:tickets;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" `
 
 	Timestamp
 }

@@ -39,6 +39,8 @@ func SetUpDatabaseConnection() *gorm.DB {
 	if err := db.AutoMigrate(
 		&entity.Role{},
 		&entity.User{},
+		&entity.Event{},
+		&entity.Ticket{},
 		&entity.LinkShortener{},
 	); err != nil {
 		panic(err)
