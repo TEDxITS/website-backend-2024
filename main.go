@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/TEDxITS/website-backend-2024/config"
+	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/controller"
 	"github.com/TEDxITS/website-backend-2024/middleware"
 	"github.com/TEDxITS/website-backend-2024/migrations/seeder"
@@ -14,6 +15,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/utils/azure"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 	"gorm.io/gorm"
 )
 
@@ -44,6 +46,7 @@ func main() {
 	// database seeding, update existing data or create if not found
 	if err := seeder.RunSeeders(db); err != nil {
 		log.Fatalf("error migration seeder: %v", err)
+		return
 	}
 
 	/*
@@ -60,6 +63,12 @@ func main() {
 	port := os.Getenv("HTTP_PLATFORM_PORT")
 	if port == "" {
 		port = "8888"
+	}
+
+	if os.Getenv("ENV") == constants.ENUM_RUN_PRODUCTION {
+		constants.BASE_URL = os.Getenv("BASE_URL")
+	} else {
+		constants.BASE_URL = "http://localhost:" + port
 	}
 
 	if err := server.Run(":" + port); err != nil {

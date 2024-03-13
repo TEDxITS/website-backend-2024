@@ -8,18 +8,16 @@ import (
 	"errors"
 	"fmt"
 	"io"
-)
+	"os"
 
-const (
-	// todo
-	KEY = "8e71bbce7451ba2835de5aea73e4f3f96821455240823d2fd8174975b8321bfc!"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 // https://www.melvinvivas.com/how-to-encrypt-and-decrypt-data-using-aes
 
 func AESEncrypt(stringToEncrypt string) (encryptedString string, err error) {
 	//Since the key is in string, we need to convert decode it to bytes
-	key, _ := hex.DecodeString(KEY)
+	key, _ := hex.DecodeString(os.Getenv("JWT_SECRET"))
 	plaintext := []byte(stringToEncrypt)
 
 	//Create a new Cipher Block from the key
@@ -55,7 +53,7 @@ func AESDecrypt(encryptedString string) (decryptedString string, err error) {
 		}
 	}()
 
-	key, _ := hex.DecodeString(KEY)
+	key, _ := hex.DecodeString(os.Getenv("JWT_SECRET"))
 	enc, _ := hex.DecodeString(encryptedString)
 
 	//Create a new Cipher Block from the key

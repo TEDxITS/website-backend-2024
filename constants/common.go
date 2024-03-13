@@ -1,5 +1,7 @@
 package constants
 
+var BASE_URL string
+
 const (
 	ENUM_ROLE_ADMIN = "admin"
 	ENUM_ROLE_USER  = "user"

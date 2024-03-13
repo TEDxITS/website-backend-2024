@@ -2,7 +2,7 @@
   {
     "id": "d7698c0f-a978-4b76-96f7-aa9cf0304bff",
     "name": "Admin TEDxITS2024",
-    "email": "admin@tedxits2024",
+    "email": "admin@tedxits",
     "password": "SuperSecurePassword",
     "is_verified": true,
     "role_id": "0da109e0-83ba-4588-8a71-6e265a434769" 
@@ -10,7 +10,7 @@
   {
     "id": "8b609f50-e266-4e28-abbb-270bb15ce170",
     "name": "ordinary user",
-    "email": "user@tedxits2024",
+    "email": "user@gmail.com",
     "password": "SuperSecurePassword",
     "is_verified": true,
     "role_id": "7688c0e9-78ef-4d06-b6ee-77807b526fed" 

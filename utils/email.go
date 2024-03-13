@@ -6,17 +6,20 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func SendMail(toEmail string, subject string, body string) error {
-	emailConfig, err := config.NewEmailConfig()
-	if err != nil {
-		return err
-	}
+type Email struct {
+	Email   string
+	Subject string
+	Body    string
+}
 
+func SendMail(mail Email) error {
+
+	emailConfig := config.NewEmailConfig()
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", emailConfig.AuthEmail)
-	mailer.SetHeader("To", toEmail)
-	mailer.SetHeader("Subject", subject)
-	mailer.SetBody("text/html", body)
+	mailer.SetHeader("To", mail.Email)
+	mailer.SetHeader("Subject", mail.Subject)
+	mailer.SetBody("text/html", mail.Body)
 
 	dialer := gomail.NewDialer(
 		emailConfig.Host,
@@ -25,7 +28,7 @@ func SendMail(toEmail string, subject string, body string) error {
 		emailConfig.AuthPassword,
 	)
 
-	err = dialer.DialAndSend(mailer)
+	err := dialer.DialAndSend(mailer)
 	if err != nil {
 		return err
 	}

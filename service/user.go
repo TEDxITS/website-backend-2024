@@ -1,7 +1,11 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"os"
+	"text/template"
+	"time"
 
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
@@ -18,6 +22,8 @@ type (
 		UpdateUser(ctx context.Context, req dto.UserRequest, userId string) (dto.UserResponse, error)
 		Me(ctx context.Context, userId string, userRole string) (dto.UserResponse, error)
 		GetAllPagination(ctx context.Context, req dto.PaginationQuery) (dto.UserPaginationResponse, error)
+
+		generateVerificationEmail(userEmail string) (utils.Email, error)
 	}
 
 	userService struct {
@@ -42,10 +48,10 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dt
 	}
 
 	user := entity.User{
-		Name:       req.Name,
-		Email:      req.Email,
-		Password:   req.Password,
-		IsVerified: false,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+		Verified: false,
 	}
 
 	userReg, err := s.userRepo.RegisterUser(user)
@@ -58,7 +64,45 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dt
 		Name:       userReg.Name,
 		Role:       userReg.RoleID,
 		Email:      userReg.Email,
-		IsVerified: userReg.IsVerified,
+		IsVerified: userReg.Verified,
+	}, nil
+}
+
+func (s *userService) generateVerificationEmail(userEmail string) (utils.Email, error) {
+	expired := time.Now().Add(24 * time.Hour).Format("2006-01-02 15:04:05")
+	token, err := utils.AESEncrypt(userEmail + "||" + expired)
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	verifyLink := constants.BASE_URL + "/api/user/verify/" + token
+	readHtml, err := os.ReadFile("utils/email-template/base_mail.html")
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	data := struct {
+		Email  string
+		Verify string
+	}{
+		Email:  userEmail,
+		Verify: verifyLink,
+	}
+
+	tmpl, err := template.New("custom").Parse(string(readHtml))
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	var strMail bytes.Buffer
+	if err := tmpl.Execute(&strMail, data); err != nil {
+		return utils.Email{}, err
+	}
+
+	return utils.Email{
+		Email:   userEmail,
+		Subject: "Verify Your TEDxITS Account",
+		Body:    strMail.String(),
 	}, nil
 }
 
@@ -68,7 +112,7 @@ func (s *userService) VerifyLogin(ctx context.Context, email string, password st
 		return entity.User{}, dto.ErrCredentialsNotMatched
 	}
 
-	if !user.IsVerified {
+	if !user.Verified {
 		return entity.User{}, dto.ErrAccountNotVerified
 	}
 
@@ -104,7 +148,7 @@ func (s *userService) UpdateUser(ctx context.Context, req dto.UserRequest, userI
 		Name:       userUpdate.Name,
 		Role:       ctx.Value("user_role").(string),
 		Email:      userUpdate.Email,
-		IsVerified: userUpdate.IsVerified,
+		IsVerified: userUpdate.Verified,
 	}, nil
 }
 
@@ -119,7 +163,7 @@ func (s *userService) Me(ctx context.Context, userId string, userRole string) (d
 		Name:       user.Name,
 		Role:       userRole,
 		Email:      user.Email,
-		IsVerified: user.IsVerified,
+		IsVerified: user.Verified,
 	}, nil
 }
 
@@ -149,7 +193,7 @@ func (s *userService) GetAllPagination(ctx context.Context, req dto.PaginationQu
 			Name:       user.Name,
 			Email:      user.Email,
 			RoleID:     user.RoleID,
-			IsVerified: user.IsVerified,
+			IsVerified: user.Verified,
 		})
 	}
 

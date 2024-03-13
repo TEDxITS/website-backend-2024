@@ -20,5 +20,9 @@ func RunSeeders(db *gorm.DB) error {
 		return err
 	}
 
+	if err := seeders.EventSeeder(db); err != nil {
+		return err
+	}
+
 	return nil
 }
