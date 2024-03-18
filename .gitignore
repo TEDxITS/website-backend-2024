@@ -23,6 +23,7 @@ main
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+volumes/
 
 # Go workspace file
 go.work
