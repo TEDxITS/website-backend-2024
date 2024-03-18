@@ -10,12 +10,14 @@ const (
 	MESSAGE_FAILED_GET_USER      = "failed get user"
 	MESSAGE_FAILED_LOGIN         = "failed login"
 	MESSAGE_FAILED_UPDATE_USER   = "failed update user"
+	MESSAGE_FAILED_VERIFY_USER   = "failed verify user"
 
 	// Success
 	MESSAGE_SUCCESS_REGISTER_USER = "success create user"
 	MESSAGE_SUCCESS_GET_USER      = "success get user"
 	MESSAGE_SUCCESS_LOGIN         = "success login"
 	MESSAGE_SUCCESS_UPDATE_USER   = "success update user"
+	MESSAGE_SUCCESS_VERIFY_USER   = "success verify user"
 )
 
 var (
