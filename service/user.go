@@ -24,6 +24,7 @@ type (
 		GetAllPagination(ctx context.Context, req dto.PaginationQuery) (dto.UserPaginationResponse, error)
 
 		generateVerificationEmail(userEmail string) (utils.Email, error)
+		ResendVerifyEmail(ctx context.Context, email string) error
 	}
 
 	userService struct {
@@ -35,6 +36,29 @@ func NewUserService(ur repository.UserRepository) UserService {
 	return &userService{
 		userRepo: ur,
 	}
+}
+
+func (s *userService) ResendVerifyEmail(ctx context.Context, email string) error {
+	user, err := s.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	if user.Verified {
+		return dto.ErrAccountAlreadyVerified
+	}
+
+	emailData, err := s.generateVerificationEmail(email)
+	if err != nil {
+		return dto.ErrGenerateVerificationEmail
+	}
+
+	err = utils.SendMail(emailData)
+	if err != nil {
+		return dto.ErrSendEmail
+	}
+
+	return nil
 }
 
 func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dto.UserResponse, error) {

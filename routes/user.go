@@ -16,6 +16,7 @@ func User(route *gin.Engine, userController controller.UserController, jwtServic
 		routes.PATCH("", middleware.Authenticate(jwtService), userController.Update)
 		routes.GET("/me", middleware.Authenticate(jwtService), userController.Me)
 		routes.GET("", middleware.Authenticate(jwtService), middleware.OnlyAllow(constants.ENUM_ROLE_ADMIN), userController.GetAllPagination)
-		routes.GET("/verify", userController.Verify )
+		routes.GET("/verify", userController.Verify)
+		routes.POST("/verify/resend", userController.ResendVerifyEmail)
 	}
 }

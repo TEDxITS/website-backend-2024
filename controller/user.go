@@ -19,6 +19,7 @@ type (
 		Me(ctx *gin.Context)
 		GetAllPagination(ctx *gin.Context)
 		Verify(ctx *gin.Context)
+		ResendVerifyEmail(ctx *gin.Context)
 	}
 
 	userController struct {
@@ -34,9 +35,30 @@ func NewUserController(us service.UserService, jwt service.JWTService) UserContr
 	}
 }
 
+func (c *userController) ResendVerifyEmail(ctx *gin.Context) {
+	var email dto.UserResendVerifyEmailRequest
+	
+	if err := ctx.ShouldBind(&email); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	err := c.userService.ResendVerifyEmail(ctx.Request.Context(), email.Email)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_RESEND_VERIFY_EMAIL, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_RESEND_VERIFY_EMAIL, nil)
+	res.Message = "Email has been sent"
+	ctx.JSON(http.StatusOK, res.Message)
+}
+
 func (c *userController) Verify(ctx *gin.Context) {
 	token := ctx.Query("token")
-	
+
 	_, err := c.jwtService.ValidateToken(token)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_VERIFY_USER, err.Error(), nil)
