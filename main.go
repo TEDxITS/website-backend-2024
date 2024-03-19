@@ -27,6 +27,7 @@ func main() {
 		// repositories
 		userRepository          repository.UserRepository          = repository.NewUserRepository(db)
 		linkShortenerRepository repository.LinkShortenerRepository = repository.NewLinkShortenerRepository(db)
+		ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
 		eventRepository         repository.EventRepository         = repository.NewEventRepository(db)
 		// ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
 		eventRepository repository.EventRepository   = repository.NewEventRepository(db)
@@ -35,12 +36,14 @@ func main() {
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
+		ticketService        service.TicketService        = service.NewTicketService(ticketRepository)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
 		ticketService        service.TicketService        = service.NewTicketService(eventRepository, pe2RSVPRepo)
 
 		// controllers
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
 		linkShortenerController controller.LinkShortenerController = controller.NewLinkShortenerController(linkShortenerService)
+		ticketController        controller.TicketController        = controller.NewTicketController(ticketService)
 		eventController         controller.EventController         = controller.NewEventController(eventService)
 		ticketController        controller.TicketController        = controller.NewTicketController(ticketService)
 	)
@@ -52,6 +55,7 @@ func main() {
 
 	routes.User(server, userController, jwtService)
 	routes.LinkShortener(server, linkShortenerController, jwtService)
+	routes.Ticket(server, ticketController)
 	routes.Event(server, eventController, jwtService)
 	routes.Ticket(server, ticketController, jwtService)
 
