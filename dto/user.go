@@ -19,15 +19,17 @@ const (
 )
 
 var (
-	ErrRoleNotAllowed        = errors.New("denied access for \"%v\" role")
-	ErrCreateUser            = errors.New("failed to create user")
-	ErrGetUserById           = errors.New("failed to get user by id")
-	ErrEmailAlreadyExists    = errors.New("email already exist")
-	ErrUpdateUser            = errors.New("failed to update user")
-	ErrUserNotFound          = errors.New("user not found")
-	ErrCredentialsNotMatched = errors.New("credentials not matched")
-	ErrAccountNotVerified    = errors.New("account not verified")
-	ErrEmailFormatInvalid    = errors.New("email format invalid")
+	ErrRoleNotAllowed          = errors.New("denied access for \"%v\" role")
+	ErrCreateUser              = errors.New("failed to create user")
+	ErrGetUserById             = errors.New("failed to get user by id")
+	ErrEmailAlreadyExists      = errors.New("email already exist")
+	ErrUpdateUser              = errors.New("failed to update user")
+	ErrUserNotFound            = errors.New("user not found")
+	ErrCredentialsNotMatched   = errors.New("credentials not matched")
+	ErrAccountNotVerified      = errors.New("account not verified")
+	ErrEmailFormatInvalid      = errors.New("email format invalid")
+	ErrVerifyEmailNotGenerated = errors.New("unable to generate verification email")
+	ErrVerifyEmailNotSent      = errors.New("unable to send verification email")
 )
 
 type (
