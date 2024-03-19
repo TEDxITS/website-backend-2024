@@ -27,14 +27,17 @@ func main() {
 		// repositories
 		userRepository          repository.UserRepository          = repository.NewUserRepository(db)
 		linkShortenerRepository repository.LinkShortenerRepository = repository.NewLinkShortenerRepository(db)
+		ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
 
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
+		ticketService        service.TicketService        = service.NewTicketService(ticketRepository)
 
 		// controllers
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
 		linkShortenerController controller.LinkShortenerController = controller.NewLinkShortenerController(linkShortenerService)
+		ticketController        controller.TicketController        = controller.NewTicketController(ticketService)
 	)
 
 	server := gin.Default()
@@ -42,6 +45,7 @@ func main() {
 
 	routes.User(server, userController, jwtService)
 	routes.LinkShortener(server, linkShortenerController, jwtService)
+	routes.Ticket(server, ticketController)
 
 	// database seeding, update existing data or create if not found
 	if err := seeder.RunSeeders(db); err != nil {
