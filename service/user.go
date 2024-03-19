@@ -23,7 +23,7 @@ type (
 		Me(ctx context.Context, userId string, userRole string) (dto.UserResponse, error)
 		GetAllPagination(ctx context.Context, req dto.PaginationQuery) (dto.UserPaginationResponse, error)
 
-		SendVerificationEmail(userEmail string) error
+		SendVerificationEmail(ctx context.Context, userEmail string) error
 	}
 
 	userService struct {
@@ -106,7 +106,7 @@ func generateVerificationEmail(userEmail string) (utils.Email, error) {
 	}, nil
 }
 
-func (s *userService) SendVerificationEmail(userEmail string) error {
+func (s *userService) SendVerificationEmail(ctx context.Context, userEmail string) error {
 	email, err := generateVerificationEmail(userEmail)
 	if err != nil {
 		return dto.ErrVerifyEmailNotGenerated
