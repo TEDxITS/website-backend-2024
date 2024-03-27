@@ -22,9 +22,8 @@ type (
 		UpdateUser(ctx context.Context, req dto.UserRequest, userId string) (dto.UserResponse, error)
 		Me(ctx context.Context, userId string, userRole string) (dto.UserResponse, error)
 		GetAllPagination(ctx context.Context, req dto.PaginationQuery) (dto.UserPaginationResponse, error)
-
 		generateVerificationEmail(userEmail string) (utils.Email, error)
-		ResendVerifyEmail(ctx context.Context, email string) error
+		SendVerifyEmail(ctx context.Context, email string) error
 	}
 
 	userService struct {
@@ -38,7 +37,7 @@ func NewUserService(ur repository.UserRepository) UserService {
 	}
 }
 
-func (s *userService) ResendVerifyEmail(ctx context.Context, email string) error {
+func (s *userService) SendVerifyEmail(ctx context.Context, email string) error {
 	user, err := s.userRepo.GetUserByEmail(email)
 	if err != nil {
 		return dto.ErrUserNotFound
@@ -83,6 +82,10 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dt
 		return dto.UserResponse{}, dto.ErrCreateUser
 	}
 
+	if err := s.SendVerifyEmail(ctx, req.Email); err != nil {
+		return dto.UserResponse{}, err
+	}
+
 	return dto.UserResponse{
 		ID:         userReg.ID.String(),
 		Name:       userReg.Name,
@@ -99,8 +102,8 @@ func (s *userService) generateVerificationEmail(userEmail string) (utils.Email, 
 		return utils.Email{}, err
 	}
 
-	verifyLink := constants.BASE_URL + "/api/user/verify/" + token
-	readHtml, err := os.ReadFile("utils/email-template/base_mail.html")
+	verifyLink := constants.BASE_URL + "/api/user/verify?token=" + token
+	readHtml, err := os.ReadFile("utils/template/base_mail.html")
 	if err != nil {
 		return utils.Email{}, err
 	}
