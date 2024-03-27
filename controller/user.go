@@ -37,14 +37,14 @@ func NewUserController(us service.UserService, jwt service.JWTService) UserContr
 
 func (c *userController) ResendVerifyEmail(ctx *gin.Context) {
 	var email dto.UserResendVerifyEmailRequest
-	
+
 	if err := ctx.ShouldBind(&email); err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
 
-	err := c.userService.ResendVerifyEmail(ctx.Request.Context(), email.Email)
+	err := c.userService.SendVerifyEmail(ctx.Request.Context(), email.Email)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_RESEND_VERIFY_EMAIL, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
@@ -52,8 +52,7 @@ func (c *userController) ResendVerifyEmail(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_RESEND_VERIFY_EMAIL, nil)
-	res.Message = "Email has been sent"
-	ctx.JSON(http.StatusOK, res.Message)
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (c *userController) Verify(ctx *gin.Context) {

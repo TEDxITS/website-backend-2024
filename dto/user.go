@@ -14,7 +14,7 @@ const (
 	MESSAGE_FAILED_RESEND_VERIFY_EMAIL = "failed resend verify email"
 
 	// Success
-	MESSAGE_SUCCESS_REGISTER_USER       = "success create user"
+	MESSAGE_SUCCESS_REGISTER_USER       = "success create user. Please verify your email to activate your account"
 	MESSAGE_SUCCESS_GET_USER            = "success get user"
 	MESSAGE_SUCCESS_LOGIN               = "success login"
 	MESSAGE_SUCCESS_UPDATE_USER         = "success update user"
