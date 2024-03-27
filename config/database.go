@@ -41,6 +41,7 @@ func SetUpDatabaseConnection() *gorm.DB {
 		&entity.User{},
 		&entity.Event{},
 		&entity.Ticket{},
+		&entity.PreEventTwoRSVP{},
 		&entity.LinkShortener{},
 	); err != nil {
 		panic(err)
