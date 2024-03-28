@@ -21,10 +21,15 @@ func EventSeeder(db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	jsonData, _ := io.ReadAll(jsonFile)
+	jsonData, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return err
+	}
 
 	var eventList []entity.Event
-	json.Unmarshal(jsonData, &eventList)
+	if err := json.Unmarshal(jsonData, &eventList); err != nil {
+		return err
+	}
 
 	for _, data := range eventList {
 		if err := db.Save(&data).Error; err != nil {

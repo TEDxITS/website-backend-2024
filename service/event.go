@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 
+	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/TEDxITS/website-backend-2024/repository"
 )
 
 type (
 	EventService interface {
-		FindAll(ctx context.Context, userRole string) (dto.EventResponse, error)
+		FindAll(ctx context.Context, userRole string) ([]dto.EventResponse, error)
 		FindByID(ctx context.Context, id string, userRole string) (dto.EventResponse, error)
 	}
 
@@ -24,40 +25,36 @@ func NewEventService(er repository.EventRepository) EventService {
 	}
 }
 
-func (s *eventService) FindAll(ctx context.Context, userRole string) (dto.EventResponse, error) {
+func (s *eventService) FindAll(ctx context.Context, userRole string) ([]dto.EventResponse, error) {
 	events, err := s.eventRepo.FindAll()
 	if err != nil {
-		return dto.EventResponse{}, err
+		return []dto.EventResponse{}, err
 	}
 
-	var eventResponses []interface{}
+	var result []dto.EventResponse
 	for _, event := range events {
-		var eventResponse interface{}
-		if userRole == "admin" {
-			eventResponse = dto.AdminEventResponse{
-				ID:          event.ID.String(),
-				Name:        event.Name,
-				Description: event.Description,
-				Price:       event.Price,
-				Capacity:    event.Capacity,
-				Registers:   event.Registers,
-				StartDate:   event.StartDate,
-				EndDate:     event.EndDate,
-			}
-		} else {
-			eventResponse = dto.UserEventResponse{
-				ID:          event.ID.String(),
-				Name:        event.Name,
-				Description: event.Description,
-				Price:       event.Price,
-				StartDate:   event.StartDate,
-				EndDate:     event.EndDate,
-			}
+		eventResponse := dto.EventResponse{
+			ID:          event.ID.String(),
+			Name:        event.Name,
+			Description: event.Description,
+			Price:       event.Price,
+			StartDate:   event.StartDate,
+			EndDate:     event.EndDate,
 		}
-		eventResponses = append(eventResponses, eventResponse)
+
+		if userRole == constants.ENUM_ROLE_ADMIN {
+			if event.Registers == 0 {
+				event.Registers = 1
+			}
+
+			eventResponse.Capacity = event.Capacity
+			eventResponse.Registers = event.Registers
+		}
+
+		result = append(result, eventResponse)
 	}
 
-	return dto.EventResponse{Data: eventResponses}, nil
+	return result, nil
 }
 
 func (s *eventService) FindByID(ctx context.Context, id string, userRole string) (dto.EventResponse, error) {
@@ -66,29 +63,23 @@ func (s *eventService) FindByID(ctx context.Context, id string, userRole string)
 		return dto.EventResponse{}, err
 	}
 
-	var eventResponse interface{}
-
-	if userRole == "admin" {
-		eventResponse = dto.AdminEventResponse{
-			ID:          event.ID.String(),
-			Name:        event.Name,
-			Description: event.Description,
-			Price:       event.Price,
-			Capacity:    event.Capacity,
-			Registers:   event.Registers,
-			StartDate:   event.StartDate,
-			EndDate:     event.EndDate,
-		}
-	} else {
-		eventResponse = dto.UserEventResponse{
-			ID:          event.ID.String(),
-			Name:        event.Name,
-			Description: event.Description,
-			Price:       event.Price,
-			StartDate:   event.StartDate,
-			EndDate:     event.EndDate,
-		}
+	result := dto.EventResponse{
+		ID:          event.ID.String(),
+		Name:        event.Name,
+		Description: event.Description,
+		Price:       event.Price,
+		StartDate:   event.StartDate,
+		EndDate:     event.EndDate,
 	}
 
-	return dto.EventResponse{Data: eventResponse}, nil
+	if userRole == constants.ENUM_ROLE_ADMIN {
+		if event.Registers == 0 {
+			event.Registers = 1
+		}
+
+		result.Capacity = event.Capacity
+		result.Registers = event.Registers
+	}
+
+	return result, nil
 }

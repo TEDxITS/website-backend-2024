@@ -12,12 +12,8 @@ import (
 
 type (
 	EventController interface {
-		FindAll(ctx *gin.Context, userRole string)
-		FindAllAdmin(ctx *gin.Context)
-		FindAllUser(ctx *gin.Context)
-		FindByID(ctx *gin.Context, id string, userRole string)
-		FindByIDAdmin(ctx *gin.Context)
-		FindByIDUser(ctx *gin.Context)
+		FindAll(ctx *gin.Context)
+		FindByID(ctx *gin.Context)
 	}
 
 	eventController struct {
@@ -31,43 +27,24 @@ func NewEventController(es service.EventService) EventController {
 	}
 }
 
-func (c *eventController) FindAllAdmin(ctx *gin.Context) {
-	userRole := ctx.MustGet(constants.CTX_KEY_ROLE_NAME).(string)
-	c.FindAll(ctx, userRole)
-}
+func (c *eventController) FindAll(ctx *gin.Context) {
+	userRole := ctx.GetString(constants.CTX_KEY_ROLE_NAME)
 
-func (c *eventController) FindAllUser(ctx *gin.Context) {
-	userRole := "user"
-	c.FindAll(ctx, userRole)
-}
-
-func (c *eventController) FindAll(ctx *gin.Context, userRole string) {
 	result, err := c.eventService.FindAll(ctx, userRole)
-
 	if err != nil {
 		response := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_EVENT, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	response := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_EVENT, result.Data)
-
+	response := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_EVENT, result)
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (c *eventController) FindByIDAdmin(ctx *gin.Context) {
-	userRole := ctx.MustGet(constants.CTX_KEY_ROLE_NAME).(string)
+func (c *eventController) FindByID(ctx *gin.Context) {
+	userRole := ctx.GetString(constants.CTX_KEY_ROLE_NAME)
 	id := ctx.Param("id")
-	c.FindByID(ctx, id, userRole)
-}
 
-func (c *eventController) FindByIDUser(ctx *gin.Context) {
-	userRole := "user"
-	id := ctx.Param("id")
-	c.FindByID(ctx, id, userRole)
-}
-
-func (c *eventController) FindByID(ctx *gin.Context, id string, userRole string) {
 	result, err := c.eventService.FindByID(ctx, id, userRole)
 	if err != nil {
 		response := utils.BuildResponseFailed(dto.MESSAGE_EVENT_NOT_FOUND, err.Error(), nil)
@@ -75,7 +52,6 @@ func (c *eventController) FindByID(ctx *gin.Context, id string, userRole string)
 		return
 	}
 
-	response := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_EVENT, result.Data)
-
+	response := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_EVENT, result)
 	ctx.JSON(http.StatusOK, response)
 }

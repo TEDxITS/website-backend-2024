@@ -17,27 +17,14 @@ var (
 )
 
 type (
-	AdminEventResponse struct {
-		ID          string    `json:"id"`
-		Name        string    `json:"name"`
-		Description string    `json:"description"`
-		Price       int       `json:"price"`
-		Capacity    int       `json:"capacity"`
-		Registers   int       `json:"registers"`
-		StartDate   time.Time `json:"start_date"`
-		EndDate     time.Time `json:"end_date"`
-	}
-
-	UserEventResponse struct {
-		ID          string    `json:"id"`
-		Name        string    `json:"name"`
-		Description string    `json:"description"`
-		Price       int       `json:"price"`
-		StartDate   time.Time `json:"start_date"`
-		EndDate     time.Time `json:"end_date"`
-	}
-
 	EventResponse struct {
-		Data interface{} `json:"data"`
+		ID          string    `json:"id"`
+		Name        string    `json:"name"`
+		Description string    `json:"description"`
+		Price       int       `json:"price"`
+		Capacity    int       `json:"capacity,omitempty"`
+		Registers   int       `json:"registers,omitempty"`
+		StartDate   time.Time `json:"start_date"`
+		EndDate     time.Time `json:"end_date"`
 	}
 )

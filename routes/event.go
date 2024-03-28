@@ -8,12 +8,9 @@ import (
 )
 
 func Event(route *gin.Engine, eventController controller.EventController, jwtService service.JWTService) {
-	routes := route.Group("/api/event")
+	routes := route.Group("/api/events")
 	{
-		routes.GET("/", eventController.FindAllUser)
-		routes.GET("/:id", eventController.FindByIDUser)
-
-		routes.GET("/admin", middleware.Authenticate(jwtService), eventController.FindAllAdmin)
-		routes.GET("/:id/admin", middleware.Authenticate(jwtService), eventController.FindByIDAdmin)
+		routes.GET("/", middleware.Authenticate(jwtService), eventController.FindAll)
+		routes.GET("/:id", middleware.Authenticate(jwtService), eventController.FindByID)
 	}
 }
