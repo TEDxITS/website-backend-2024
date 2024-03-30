@@ -36,7 +36,7 @@ func main() {
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
-		ticketService        service.TicketService        = service.NewTicketService(ticketRepository)
+		ticketService        service.TicketService        = service.NewTicketService(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
 		ticketService        service.TicketService        = service.NewTicketService(eventRepository, pe2RSVPRepo)
 
@@ -55,7 +55,7 @@ func main() {
 
 	routes.User(server, userController, jwtService)
 	routes.LinkShortener(server, linkShortenerController, jwtService)
-	routes.Ticket(server, ticketController)
+	routes.Ticket(server, ticketController, jwtService)
 	routes.Event(server, eventController, jwtService)
 	routes.Ticket(server, ticketController, jwtService)
 
