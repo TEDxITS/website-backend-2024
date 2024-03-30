@@ -27,12 +27,14 @@ func main() {
 		// repositories
 		userRepository          repository.UserRepository          = repository.NewUserRepository(db)
 		linkShortenerRepository repository.LinkShortenerRepository = repository.NewLinkShortenerRepository(db)
-		ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
+		// ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
+		eventRepository repository.EventRepository   = repository.NewEventRepository(db)
+		pe2RSVPRepo     repository.PE2RSVPRepository = repository.NewPE2RSVPRepository(db)
 
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
-		ticketService        service.TicketService        = service.NewTicketService(ticketRepository)
+		ticketService        service.TicketService        = service.NewTicketService(eventRepository, pe2RSVPRepo)
 
 		// controllers
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
@@ -41,11 +43,13 @@ func main() {
 	)
 
 	server := gin.Default()
+	server.RedirectTrailingSlash = true
+
 	server.Use(middleware.CORSMiddleware())
 
 	routes.User(server, userController, jwtService)
 	routes.LinkShortener(server, linkShortenerController, jwtService)
-	routes.Ticket(server, ticketController)
+	routes.Ticket(server, ticketController, jwtService)
 
 	// database seeding, update existing data or create if not found
 	if err := seeder.RunSeeders(db); err != nil {
