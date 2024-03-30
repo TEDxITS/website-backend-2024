@@ -12,6 +12,7 @@ type (
 	EventService interface {
 		FindAll(ctx context.Context, userRole string) ([]dto.EventResponse, error)
 		FindByID(ctx context.Context, id string, userRole string) (dto.EventResponse, error)
+		GetPE2Detail(ctx context.Context, userRole string) (dto.EventResponse, error)
 	}
 
 	eventService struct {
@@ -26,7 +27,7 @@ func NewEventService(er repository.EventRepository) EventService {
 }
 
 func (s *eventService) FindAll(ctx context.Context, userRole string) ([]dto.EventResponse, error) {
-	events, err := s.eventRepo.FindAll()
+	events, err := s.eventRepo.GetAll()
 	if err != nil {
 		return []dto.EventResponse{}, err
 	}
@@ -58,7 +59,7 @@ func (s *eventService) FindAll(ctx context.Context, userRole string) ([]dto.Even
 }
 
 func (s *eventService) FindByID(ctx context.Context, id string, userRole string) (dto.EventResponse, error) {
-	event, err := s.eventRepo.FindByID(id)
+	event, err := s.eventRepo.GetByID(id)
 	if err != nil {
 		return dto.EventResponse{}, err
 	}
@@ -79,6 +80,33 @@ func (s *eventService) FindByID(ctx context.Context, id string, userRole string)
 
 		result.Capacity = event.Capacity
 		result.Registers = event.Registers
+	}
+
+	return result, nil
+}
+
+func (s *eventService) GetPE2Detail(ctx context.Context, userRole string) (dto.EventResponse, error) {
+	pe2, err := s.eventRepo.GetPE2Detail()
+	if err != nil {
+		return dto.EventResponse{}, err
+	}
+
+	result := dto.EventResponse{
+		ID:          pe2.ID.String(),
+		Name:        pe2.Name,
+		Description: pe2.Description,
+		Price:       pe2.Price,
+		StartDate:   pe2.StartDate,
+		EndDate:     pe2.EndDate,
+	}
+
+	if userRole == constants.ENUM_ROLE_ADMIN {
+		if pe2.Registers == 0 {
+			pe2.Registers = 1
+		}
+
+		result.Capacity = pe2.Capacity
+		result.Registers = pe2.Registers
 	}
 
 	return result, nil

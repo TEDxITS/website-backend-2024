@@ -14,6 +14,7 @@ type (
 	EventController interface {
 		FindAll(ctx *gin.Context)
 		FindByID(ctx *gin.Context)
+		GetPE2Detail(ctx *gin.Context)
 	}
 
 	eventController struct {
@@ -46,6 +47,20 @@ func (c *eventController) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	result, err := c.eventService.FindByID(ctx, id, userRole)
+	if err != nil {
+		response := utils.BuildResponseFailed(dto.MESSAGE_EVENT_NOT_FOUND, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusNotFound, response)
+		return
+	}
+
+	response := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_EVENT, result)
+	ctx.JSON(http.StatusOK, response)
+}
+
+func (c *eventController) GetPE2Detail(ctx *gin.Context) {
+	userRole := ctx.GetString(constants.CTX_KEY_ROLE_NAME)
+
+	result, err := c.eventService.GetPE2Detail(ctx, userRole)
 	if err != nil {
 		response := utils.BuildResponseFailed(dto.MESSAGE_EVENT_NOT_FOUND, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusNotFound, response)

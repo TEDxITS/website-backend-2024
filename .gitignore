@@ -8,6 +8,7 @@ assets/
 *sql
 
 # Binaries for programs and plugins
+main.exe
 main
 *.exe
 *.exe~
@@ -27,6 +28,3 @@ volumes/
 
 # Go workspace file
 go.work
-
-# build
-its-nabu-sandbox-bin

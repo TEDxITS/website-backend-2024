@@ -48,6 +48,13 @@ func (c *userController) Register(ctx *gin.Context) {
 		return
 	}
 
+	err = c.userService.SendVerificationEmail(ctx.Request.Context(), result.Email)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_REGISTER_USER, err.Error(), nil)
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_REGISTER_USER, result)
 	ctx.JSON(http.StatusOK, res)
 }

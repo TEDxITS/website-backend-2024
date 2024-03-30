@@ -23,7 +23,7 @@ type (
 		Me(ctx context.Context, userId string, userRole string) (dto.UserResponse, error)
 		GetAllPagination(ctx context.Context, req dto.PaginationQuery) (dto.UserPaginationResponse, error)
 
-		generateVerificationEmail(userEmail string) (utils.Email, error)
+		SendVerificationEmail(ctx context.Context, userEmail string) error
 	}
 
 	userService struct {
@@ -68,7 +68,7 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dt
 	}, nil
 }
 
-func (s *userService) generateVerificationEmail(userEmail string) (utils.Email, error) {
+func generateVerificationEmail(userEmail string) (utils.Email, error) {
 	expired := time.Now().Add(24 * time.Hour).Format("2006-01-02 15:04:05")
 	token, err := utils.AESEncrypt(userEmail + "||" + expired)
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *userService) generateVerificationEmail(userEmail string) (utils.Email, 
 	}
 
 	verifyLink := constants.BASE_URL + "/api/user/verify/" + token
-	readHtml, err := os.ReadFile("utils/email-template/base_mail.html")
+	readHtml, err := os.ReadFile("utils/template/base_mail.html")
 	if err != nil {
 		return utils.Email{}, err
 	}
@@ -104,6 +104,20 @@ func (s *userService) generateVerificationEmail(userEmail string) (utils.Email, 
 		Subject: "Verify Your TEDxITS Account",
 		Body:    strMail.String(),
 	}, nil
+}
+
+func (s *userService) SendVerificationEmail(ctx context.Context, userEmail string) error {
+	email, err := generateVerificationEmail(userEmail)
+	if err != nil {
+		return dto.ErrVerifyEmailNotGenerated
+	}
+
+	err = utils.SendMail(email)
+	if err != nil {
+		return dto.ErrVerifyEmailNotSent
+	}
+
+	return nil
 }
 
 func (s *userService) VerifyLogin(ctx context.Context, email string, password string) (entity.User, error) {
