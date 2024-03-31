@@ -23,6 +23,10 @@ type (
 )
 
 func (e *PE2RSVP) AfterCreate(tx *gorm.DB) error {
+	if !*e.WillingToCome {
+		return nil
+	}
+
 	var event Event
 	if err := tx.Model(&Event{}).Where(Event{
 		Name: constants.PE2Name,
