@@ -15,6 +15,7 @@ type (
 		CreatePE2RSVP(context.Context, dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPPaginated(context.Context, dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error)
 		GetPE2RSVPDetail(context.Context, string) (dto.TicketPE2RSVPResponse, error)
+		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
 	}
 
 	ticketService struct {
@@ -75,6 +76,7 @@ func (s *ticketService) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVP
 	}
 
 	return dto.TicketPE2RSVPResponse{
+		ID:                   res.ID,
 		Name:                 res.Name,
 		Email:                res.Email,
 		Institute:            res.Institute,
@@ -109,6 +111,7 @@ func (s *ticketService) GetPE2RSVPPaginated(ctx context.Context, req dto.Paginat
 	var result []dto.TicketPE2RSVPPaginationData
 	for _, rsvp := range rsvps {
 		result = append(result, dto.TicketPE2RSVPPaginationData{
+			ID:                   rsvp.ID,
 			Name:                 rsvp.Name,
 			Institute:            rsvp.Institute,
 			Batch:                rsvp.Batch,
@@ -139,5 +142,22 @@ func (s *ticketService) GetPE2RSVPDetail(ctx context.Context, id string) (dto.Ti
 		WillingToCome:        true,
 		WillingToBeContacted: true,
 		Essay:                "UNDER CONSTRUCTION",
+	}, nil
+}
+
+func (s *ticketService) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSVPCounter, error) {
+	total, err := s.pe2RSVPRepo.CountTotal()
+	if err != nil {
+		return dto.TicketPE2RSVPCounter{}, err
+	}
+
+	attends, err := s.pe2RSVPRepo.CountAttends()
+	if err != nil {
+		return dto.TicketPE2RSVPCounter{}, err
+	}
+
+	return dto.TicketPE2RSVPCounter{
+		Total:   total,
+		Attends: attends,
 	}, nil
 }

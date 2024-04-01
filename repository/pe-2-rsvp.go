@@ -12,6 +12,8 @@ type (
 		Create(entity.PE2RSVP) (entity.PE2RSVP, error)
 		CheckEmailExist(string) (bool, error)
 		GetAllPagination(string, int, int) ([]entity.PE2RSVP, int64, int64, error)
+		CountTotal() (int64, error)
+		CountAttends() (int64, error)
 	}
 
 	pe2RSVPRepository struct {
@@ -71,4 +73,22 @@ func (r *pe2RSVPRepository) GetAllPagination(search string, limit, page int) ([]
 	}
 
 	return rsvps, maxPage, count, nil
+}
+
+func (r *pe2RSVPRepository) CountTotal() (int64, error) {
+	var count int64
+	if err := r.db.Model(&entity.PE2RSVP{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *pe2RSVPRepository) CountAttends() (int64, error) {
+	var count int64
+	if err := r.db.Model(&entity.PE2RSVP{}).Where("willing_to_come = ?", true).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
