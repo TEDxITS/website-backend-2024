@@ -58,7 +58,7 @@ func (c *userController) ResendVerifyEmail(ctx *gin.Context) {
 func (c *userController) Verify(ctx *gin.Context) {
 	token := ctx.Query("token")
 
-	_, err := c.jwtService.ValidateToken(token)
+	err := c.userService.VerifyEmail(ctx.Request.Context(), token)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_VERIFY_USER, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)

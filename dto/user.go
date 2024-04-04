@@ -35,6 +35,9 @@ var (
 	ErrAccountAlreadyVerified    = errors.New("account already verified")
 	ErrGenerateVerificationEmail = errors.New("failed to generate verification email")
 	ErrSendEmail                 = errors.New("failed to send email")
+	ErrDecryptToken              = errors.New("failed to decrypt token")
+	ErrVerifyEmail               = errors.New("failed to verify email")
+	ErrInvalidToken              = errors.New("invalid token")
 )
 
 type (
