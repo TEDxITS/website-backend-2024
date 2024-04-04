@@ -12,6 +12,7 @@ type (
 		Create(entity.PE2RSVP) (entity.PE2RSVP, error)
 		CheckEmailExist(string) (bool, error)
 		GetAllPagination(string, int, int) ([]entity.PE2RSVP, int64, int64, error)
+		GetById(string) (entity.PE2RSVP, error)
 		CountTotal() (int64, error)
 		CountAttends() (int64, error)
 	}
@@ -91,4 +92,12 @@ func (r *pe2RSVPRepository) CountAttends() (int64, error) {
 	}
 
 	return count, nil
+}
+
+func (r *pe2RSVPRepository) GetById(id string) (entity.PE2RSVP, error) {
+	var attendee entity.PE2RSVP
+	if err := r.db.Where("id = ?", id).Take(&attendee).Error; err != nil {
+		return entity.PE2RSVP{}, err
+	}
+	return attendee, nil
 }

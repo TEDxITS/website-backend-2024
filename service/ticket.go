@@ -132,16 +132,21 @@ func (s *ticketService) GetPE2RSVPPaginated(ctx context.Context, req dto.Paginat
 }
 
 func (s *ticketService) GetPE2RSVPDetail(ctx context.Context, id string) (dto.TicketPE2RSVPResponse, error) {
+	attendee, err := s.pe2RSVPRepo.GetById(id)
+	if err != nil {
+		return dto.TicketPE2RSVPResponse{}, err
+	}
+
 	return dto.TicketPE2RSVPResponse{
-		Name:                 "UNDER CONSTRUCTION",
-		Email:                "CONSTRUCTION@tedxits.com",
-		Institute:            "UNDER CONSTRUCTION",
-		Department:           "UNDER CONSTRUCTION",
-		StudentID:            "UNDER CONSTRUCTION",
-		Batch:                "UNDER CONSTRUCTION",
-		WillingToCome:        true,
-		WillingToBeContacted: true,
-		Essay:                "UNDER CONSTRUCTION",
+		Name:                 attendee.Name,
+		Email:                attendee.Email,
+		Institute:            attendee.Institute,
+		Department:           attendee.Department,
+		StudentID:            attendee.StudentID,
+		Batch:                attendee.Batch,
+		WillingToCome:        *attendee.WillingToCome,
+		WillingToBeContacted: *attendee.WillingToBeContacted,
+		Essay:                attendee.Essay,
 	}, nil
 }
 
