@@ -16,6 +16,7 @@ type (
 		GetPE2RSVPPaginated(ctx *gin.Context)
 		GetPE2RSVPDetail(ctx *gin.Context)
 		GetPE2RSVPCounter(ctx *gin.Context)
+		GetPE2RSVPStatus(ctx *gin.Context)
 	}
 
 	ticketController struct {
@@ -95,5 +96,23 @@ func (c *ticketController) GetPE2RSVPCounter(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_TICKET, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *ticketController) GetPE2RSVPStatus(ctx *gin.Context) {
+	result, err := c.ticketService.GetPE2RSVPStatus(ctx.Request.Context())
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	status := struct {
+		Status *bool `json:"status"`
+	}{
+		Status: &result,
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_TICKET, status)
 	ctx.JSON(http.StatusOK, res)
 }

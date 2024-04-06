@@ -16,6 +16,7 @@ type (
 		GetPE2RSVPPaginated(context.Context, dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error)
 		GetPE2RSVPDetail(context.Context, string) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
+		GetPE2RSVPStatus(context.Context) (bool, error)
 	}
 
 	ticketService struct {
@@ -138,6 +139,7 @@ func (s *ticketService) GetPE2RSVPDetail(ctx context.Context, id string) (dto.Ti
 	}
 
 	return dto.TicketPE2RSVPResponse{
+		ID:                   attendee.ID,
 		Name:                 attendee.Name,
 		Email:                attendee.Email,
 		Institute:            attendee.Institute,
@@ -165,4 +167,25 @@ func (s *ticketService) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSV
 		Total:   total,
 		Attends: attends,
 	}, nil
+}
+
+func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
+	event, err := s.eventRepo.GetPE2Detail()
+	if err != nil {
+		return false, err
+	}
+
+	if event.Registers >= event.Capacity {
+		return false, nil
+	}
+
+	if time.Now().Before(event.StartDate) {
+		return false, nil
+	}
+
+	if time.Now().After(event.EndDate) {
+		return false, nil
+	}
+
+	return true, nil
 }
