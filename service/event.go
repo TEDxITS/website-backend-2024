@@ -35,12 +35,11 @@ func (s *eventService) FindAll(ctx context.Context, userRole string) ([]dto.Even
 	var result []dto.EventResponse
 	for _, event := range events {
 		eventResponse := dto.EventResponse{
-			ID:          event.ID.String(),
-			Name:        event.Name,
-			Description: event.Description,
-			Price:       event.Price,
-			StartDate:   event.StartDate,
-			EndDate:     event.EndDate,
+			ID:        event.ID.String(),
+			Name:      event.Name,
+			Price:     event.Price,
+			StartDate: event.StartDate,
+			EndDate:   event.EndDate,
 		}
 
 		if userRole == constants.ENUM_ROLE_ADMIN {
@@ -65,12 +64,11 @@ func (s *eventService) FindByID(ctx context.Context, id string, userRole string)
 	}
 
 	result := dto.EventResponse{
-		ID:          event.ID.String(),
-		Name:        event.Name,
-		Description: event.Description,
-		Price:       event.Price,
-		StartDate:   event.StartDate,
-		EndDate:     event.EndDate,
+		ID:        event.ID.String(),
+		Name:      event.Name,
+		Price:     event.Price,
+		StartDate: event.StartDate,
+		EndDate:   event.EndDate,
 	}
 
 	if userRole == constants.ENUM_ROLE_ADMIN {
@@ -92,12 +90,11 @@ func (s *eventService) GetPE2Detail(ctx context.Context, userRole string) (dto.E
 	}
 
 	result := dto.EventResponse{
-		ID:          pe2.ID.String(),
-		Name:        pe2.Name,
-		Description: pe2.Description,
-		Price:       pe2.Price,
-		StartDate:   pe2.StartDate,
-		EndDate:     pe2.EndDate,
+		ID:        pe2.ID.String(),
+		Name:      pe2.Name,
+		Price:     pe2.Price,
+		StartDate: pe2.StartDate,
+		EndDate:   pe2.EndDate,
 	}
 
 	if userRole == constants.ENUM_ROLE_ADMIN {
