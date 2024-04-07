@@ -23,7 +23,7 @@ jobs:
         run: xcopy /e /k /h /i migrations build\migrations
 
       - name: Copy template files
-        run: xcopy /e /k /h /i utils\template utils\template
+        run: robocopy utils\template build\utils\template /E /Z /COPYALL
 
       - name: Build
         run: go build -o build/go-app.exe -v
