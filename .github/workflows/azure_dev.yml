@@ -22,6 +22,9 @@ jobs:
       - name: Copy migration files
         run: xcopy /e /k /h /i migrations build\migrations
 
+      - name: Copy template files
+        run: xcopy /e /k /h /i utils\template utils\template
+
       - name: Build
         run: go build -o build/go-app.exe -v
 
