@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os"
+	"strings"
 	"text/template"
 	"time"
 
@@ -22,8 +23,9 @@ type (
 		UpdateUser(ctx context.Context, req dto.UserRequest, userId string) (dto.UserResponse, error)
 		Me(ctx context.Context, userId string, userRole string) (dto.UserResponse, error)
 		GetAllPagination(ctx context.Context, req dto.PaginationQuery) (dto.UserPaginationResponse, error)
-
-		SendVerificationEmail(ctx context.Context, userEmail string) error
+		generateVerificationEmail(userEmail string) (utils.Email, error)
+		SendVerifyEmail(ctx context.Context, email string) error
+		VerifyEmail(ctx context.Context, token string) error
 	}
 
 	userService struct {
@@ -35,6 +37,65 @@ func NewUserService(ur repository.UserRepository) UserService {
 	return &userService{
 		userRepo: ur,
 	}
+}
+
+func (s *userService) VerifyEmail(ctx context.Context, token string) error {
+	decrypted, err := utils.AESDecrypt(token)
+	if err != nil {
+		return dto.ErrDecryptToken
+	}
+
+	split := strings.Split(decrypted, "||")
+	if len(split) != 2 {
+		return dto.ErrInvalidToken
+	}
+
+	email := split[0]
+	expired := split[1]
+	expiredTime, _ := time.Parse("2006-01-02 15:04:05", expired)
+	if time.Now().After(expiredTime) {
+		return dto.ErrTokenExpired
+	}
+
+	user, err := s.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	if user.Verified {
+		return dto.ErrAccountAlreadyVerified
+	}
+
+	user.Verified = true
+	_, err = s.userRepo.UpdateUser(user)
+	if err != nil {
+		return dto.ErrVerifyEmail
+	}
+
+	return nil
+}
+
+func (s *userService) SendVerifyEmail(ctx context.Context, email string) error {
+	user, err := s.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	if user.Verified {
+		return dto.ErrAccountAlreadyVerified
+	}
+
+	emailData, err := s.generateVerificationEmail(email)
+	if err != nil {
+		return dto.ErrGenerateVerificationEmail
+	}
+
+	err = utils.SendMail(emailData)
+	if err != nil {
+		return dto.ErrSendEmail
+	}
+
+	return nil
 }
 
 func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dto.UserResponse, error) {
@@ -59,6 +120,10 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dt
 		return dto.UserResponse{}, dto.ErrCreateUser
 	}
 
+	if err := s.SendVerifyEmail(ctx, req.Email); err != nil {
+		return dto.UserResponse{}, err
+	}
+
 	return dto.UserResponse{
 		ID:         userReg.ID.String(),
 		Name:       userReg.Name,
@@ -75,8 +140,9 @@ func generateVerificationEmail(userEmail string) (utils.Email, error) {
 		return utils.Email{}, err
 	}
 
-	verifyLink := constants.BASE_URL + "/api/user/verify/" + token
-	readHtml, err := os.ReadFile("utils/template/base_mail.html")
+	verifyLink := constants.BASE_URL + "/api/user/verify?token=" + token
+	readHtml, err := os.ReadFile("./utils/template/base_mail.html")
+  
 	if err != nil {
 		return utils.Email{}, err
 	}

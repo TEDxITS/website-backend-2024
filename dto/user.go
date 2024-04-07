@@ -6,30 +6,38 @@ import (
 
 const (
 	// Failed
-	MESSAGE_FAILED_REGISTER_USER = "failed create user"
-	MESSAGE_FAILED_GET_USER      = "failed get user"
-	MESSAGE_FAILED_LOGIN         = "failed login"
-	MESSAGE_FAILED_UPDATE_USER   = "failed update user"
+	MESSAGE_FAILED_REGISTER_USER       = "failed create user"
+	MESSAGE_FAILED_GET_USER            = "failed get user"
+	MESSAGE_FAILED_LOGIN               = "failed login"
+	MESSAGE_FAILED_UPDATE_USER         = "failed update user"
+	MESSAGE_FAILED_VERIFY_USER         = "failed verify user"
+	MESSAGE_FAILED_RESEND_VERIFY_EMAIL = "failed resend verify email"
 
 	// Success
-	MESSAGE_SUCCESS_REGISTER_USER = "success create user"
-	MESSAGE_SUCCESS_GET_USER      = "success get user"
-	MESSAGE_SUCCESS_LOGIN         = "success login"
-	MESSAGE_SUCCESS_UPDATE_USER   = "success update user"
+	MESSAGE_SUCCESS_REGISTER_USER       = "success create user. Please verify your email to activate your account"
+	MESSAGE_SUCCESS_GET_USER            = "success get user"
+	MESSAGE_SUCCESS_LOGIN               = "success login"
+	MESSAGE_SUCCESS_UPDATE_USER         = "success update user"
+	MESSAGE_SUCCESS_VERIFY_USER         = "success verify user"
+	MESSAGE_SUCCESS_RESEND_VERIFY_EMAIL = "success resend verify email"
 )
 
 var (
-	ErrRoleNotAllowed          = errors.New("denied access for \"%v\" role")
-	ErrCreateUser              = errors.New("failed to create user")
-	ErrGetUserById             = errors.New("failed to get user by id")
-	ErrEmailAlreadyExists      = errors.New("email already exist")
-	ErrUpdateUser              = errors.New("failed to update user")
-	ErrUserNotFound            = errors.New("user not found")
-	ErrCredentialsNotMatched   = errors.New("credentials not matched")
-	ErrAccountNotVerified      = errors.New("account not verified")
-	ErrEmailFormatInvalid      = errors.New("email format invalid")
-	ErrVerifyEmailNotGenerated = errors.New("unable to generate verification email")
-	ErrVerifyEmailNotSent      = errors.New("unable to send verification email")
+	ErrRoleNotAllowed            = errors.New("denied access for \"%v\" role")
+	ErrCreateUser                = errors.New("failed to create user")
+	ErrGetUserById               = errors.New("failed to get user by id")
+	ErrEmailAlreadyExists        = errors.New("email already exist")
+	ErrUpdateUser                = errors.New("failed to update user")
+	ErrUserNotFound              = errors.New("user not found")
+	ErrCredentialsNotMatched     = errors.New("credentials not matched")
+	ErrAccountNotVerified        = errors.New("account not verified")
+	ErrEmailFormatInvalid        = errors.New("email format invalid")
+	ErrAccountAlreadyVerified    = errors.New("account already verified")
+	ErrGenerateVerificationEmail = errors.New("failed to generate verification email")
+	ErrSendEmail                 = errors.New("failed to send email")
+	ErrDecryptToken              = errors.New("failed to decrypt token")
+	ErrVerifyEmail               = errors.New("failed to verify email")
+	ErrInvalidToken              = errors.New("invalid token")
 )
 
 type (
@@ -56,5 +64,13 @@ type (
 	UserPaginationResponse struct {
 		Data []UserResponse `json:"data"`
 		PaginationMetadata
+	}
+
+	UserResendVerifyEmailRequest struct {
+		Email string `json:"email" form:"email" binding:"required"`
+	}
+
+	UserResendVerifyEmailResponse struct {
+		Email string `json:"email"`
 	}
 )
