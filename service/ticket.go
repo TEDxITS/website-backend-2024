@@ -42,11 +42,11 @@ func (s *ticketService) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVP
 		return dto.TicketPE2RSVPResponse{}, dto.ErrPE2RSVPFull
 	}
 
-	if time.Now().Before(event.StartDate.Add(5 * time.Hour)) {
+	if time.Now().Before(event.StartDate.Add(-5 * time.Hour)) {
 		return dto.TicketPE2RSVPResponse{}, dto.ErrPE2RSVPNotOpen
 	}
 
-	if time.Now().After(event.EndDate.Add(5 * time.Hour)) {
+	if time.Now().After(event.EndDate.Add(-5 * time.Hour)) {
 		return dto.TicketPE2RSVPResponse{}, dto.ErrPE2RSVPClosed
 	}
 
@@ -179,11 +179,11 @@ func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
 		return false, nil
 	}
 
-	if time.Now().Before(event.StartDate.Add(5 * time.Hour)) {
+	if time.Now().Before(event.StartDate.Add(-5 * time.Hour)) {
 		return false, nil
 	}
 
-	if time.Now().After(event.EndDate.Add(5 * time.Hour)) {
+	if time.Now().After(event.EndDate.Add(-5 * time.Hour)) {
 		return false, nil
 	}
 
