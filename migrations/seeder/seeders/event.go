@@ -26,13 +26,13 @@ func EventSeeder(db *gorm.DB) error {
 		entity.Event{
 			ID:        uuid.MustParse("7de24efe-0aec-469a-bf0c-8fa8cae3ff3f"),
 			Name:      constants.PE2Name,
-			Price:     2000,
+			Price:     0,
 			WithKit:   &False,
 			Capacity:  40,
 			Registers: 0,
 			EventDate: time.Date(2024, time.April, 24, 12, 0, 0, 0, time.UTC),
-			StartDate: time.Date(2024, time.March, 10, 12, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.April, 17, 12, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.April, 10, 17, 0, 0, 0, time.UTC),
+			EndDate:   time.Date(2024, time.April, 19, 19, 0, 0, 0, time.UTC),
 		}, entity.Event{
 			ID:        uuid.MustParse("94f90ecf-882a-479b-9b1c-98fc6ed6183b"),
 			Name:      constants.MainEventEarlyBirdNoMerch,
