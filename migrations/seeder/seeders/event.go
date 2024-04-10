@@ -31,7 +31,7 @@ func EventSeeder(db *gorm.DB) error {
 			Capacity:  40,
 			Registers: 0,
 			EventDate: time.Date(2024, time.April, 24, 12, 0, 0, 0, time.UTC),
-			StartDate: time.Date(2024, time.April, 10, 17, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.April, 10, 19, 0, 0, 0, time.UTC),
 			EndDate:   time.Date(2024, time.April, 19, 19, 0, 0, 0, time.UTC),
 		}, entity.Event{
 			ID:        uuid.MustParse("94f90ecf-882a-479b-9b1c-98fc6ed6183b"),
