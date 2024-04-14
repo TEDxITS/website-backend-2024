@@ -13,6 +13,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/routes"
 	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/TEDxITS/website-backend-2024/utils/azure"
+	"github.com/TEDxITS/website-backend-2024/websocket"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -34,14 +35,24 @@ func main() {
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
-		ticketService        service.TicketService        = service.NewTicketService(eventRepository, pe2RSVPRepo)
+		ticketService        service.PreEvent2Service     = service.NewTicketService(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
+
+		// websocket hub
+		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
+		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
+		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
 
 		// controllers
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
 		linkShortenerController controller.LinkShortenerController = controller.NewLinkShortenerController(linkShortenerService)
 		eventController         controller.EventController         = controller.NewEventController(eventService)
-		ticketController        controller.TicketController        = controller.NewTicketController(ticketService)
+		ticketController        controller.PreEvent2Controller     = controller.NewTicketController(ticketService)
+
+		// websocket handler
+		earlyBirdQueue websocket.TicketQueue = websocket.NewTicketQueue(earlyBirdHub, jwtService)
+		preSaleQueue   websocket.TicketQueue = websocket.NewTicketQueue(preSaleHub, jwtService)
+		normalQueue    websocket.TicketQueue = websocket.NewTicketQueue(normalHub, jwtService)
 	)
 
 	server := gin.Default()
@@ -51,8 +62,10 @@ func main() {
 
 	routes.User(server, userController, jwtService)
 	routes.LinkShortener(server, linkShortenerController, jwtService)
-	routes.Ticket(server, ticketController, jwtService)
 	routes.Event(server, eventController, jwtService)
+	routes.PreEvent2(server, ticketController, jwtService)
+	routes.MainEvent(server, jwtService)
+	routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
 
 	// database seeding, update existing data or create if not found
 	if err := seeder.RunSeeders(db); err != nil {
