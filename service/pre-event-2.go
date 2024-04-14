@@ -1,50 +1,38 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"os"
-	"text/template"
 	"time"
 
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/TEDxITS/website-backend-2024/entity"
 	"github.com/TEDxITS/website-backend-2024/repository"
-	"github.com/TEDxITS/website-backend-2024/utils"
 )
 
 type (
-	TicketService interface {
+	PreEvent2Service interface {
 		CreatePE2RSVP(context.Context, dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPPaginated(context.Context, dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error)
 		GetPE2RSVPDetail(context.Context, string) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
 		GetPE2RSVPStatus(context.Context) (bool, error)
-
-		ConfirmPaymentME(context.Context, dto.TicketMEConfirmPaymentRequest) error
-		CheckInME(context.Context, dto.TicketMECheckInRequest) error
-		GetMEStatus(context.Context) ([]dto.EventDetailResponse, error)
 	}
 
-	ticketService struct {
+	preEvent2Service struct {
 		eventRepo   repository.EventRepository
 		pe2RSVPRepo repository.PE2RSVPRepository
-		userRepo    repository.UserRepository
-		ticketRepo  repository.TicketRepository
 	}
 )
 
-func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository, userRepo repository.UserRepository, ticketRepo repository.TicketRepository) TicketService {
-	return &ticketService{
+func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository) PreEvent2Service {
+	return &preEvent2Service{
 		eventRepo:   eventRepo,
 		pe2RSVPRepo: pe2RSVPRepo,
-		userRepo:    userRepo,
-		ticketRepo:  ticketRepo,
 	}
 }
 
-func (s *ticketService) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error) {
+func (s *preEvent2Service) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error) {
 	event, err := s.eventRepo.GetPE2Detail()
 	if err != nil {
 		return dto.TicketPE2RSVPResponse{}, err
@@ -102,7 +90,7 @@ func (s *ticketService) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVP
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error) {
+func (s *preEvent2Service) GetPE2RSVPPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error) {
 	var limit int
 	var page int
 
@@ -144,7 +132,7 @@ func (s *ticketService) GetPE2RSVPPaginated(ctx context.Context, req dto.Paginat
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPDetail(ctx context.Context, id string) (dto.TicketPE2RSVPResponse, error) {
+func (s *preEvent2Service) GetPE2RSVPDetail(ctx context.Context, id string) (dto.TicketPE2RSVPResponse, error) {
 	attendee, err := s.pe2RSVPRepo.GetById(id)
 	if err != nil {
 		return dto.TicketPE2RSVPResponse{}, err
@@ -164,7 +152,7 @@ func (s *ticketService) GetPE2RSVPDetail(ctx context.Context, id string) (dto.Ti
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSVPCounter, error) {
+func (s *preEvent2Service) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSVPCounter, error) {
 	total, err := s.pe2RSVPRepo.CountTotal()
 	if err != nil {
 		return dto.TicketPE2RSVPCounter{}, err
@@ -181,7 +169,7 @@ func (s *ticketService) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSV
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
+func (s *preEvent2Service) GetPE2RSVPStatus(context.Context) (bool, error) {
 	event, err := s.eventRepo.GetPE2Detail()
 	if err != nil {
 		return false, err
@@ -200,116 +188,4 @@ func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
 	}
 
 	return true, nil
-}
-
-func (s *ticketService) ConfirmPaymentME(ctx context.Context, req dto.TicketMEConfirmPaymentRequest) error {
-	email, err := s.userRepo.GetUserByEmail(req.Email)
-	if err != nil {
-		return dto.ErrUserNotFound
-	}
-
-	ticket, err := s.ticketRepo.FindByUserID(email.ID.String())
-	if err != nil {
-		return dto.ErrTicketNotFound
-	}
-
-	confirmed := true
-	ticket.PaymentConfirmed = &confirmed
-	_, err = s.ticketRepo.UpdateTicket(ticket)
-	if err != nil {
-		return err
-	}
-
-	readHtml, err := os.ReadFile("./utils/template/confirmation_payment.html")
-
-	if err != nil {
-		return err
-	}
-
-	data := struct {
-		Email    string
-		TicketID string
-	}{
-		Email:    req.Email,
-		TicketID: ticket.TicketID,
-	}
-
-	tmpl, err := template.New("custom").Parse(string(readHtml))
-	if err != nil {
-		return err
-	}
-
-	var strMail bytes.Buffer
-	if err := tmpl.Execute(&strMail, data); err != nil {
-		return err
-	}
-
-	emailData := utils.Email{
-		Email:   req.Email,
-		Subject: "Confirmation Payment",
-		Body:    strMail.String(),
-	}
-
-	err = utils.SendMail(emailData)
-	if err != nil {
-		return dto.ErrSendEmail
-	}
-
-	return nil
-}
-
-func (s *ticketService) CheckInME(ctx context.Context, req dto.TicketMECheckInRequest) error {
-	ticket, err := s.ticketRepo.FindByTicketID(req.Code)
-	if err != nil {
-		return dto.ErrTicketNotFound
-	}
-
-	checked := true
-	ticket.CheckedIn = &checked
-	_, err = s.ticketRepo.UpdateTicket(ticket)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *ticketService) GetMEStatus(ctx context.Context) ([]dto.EventDetailResponse, error) {
-	event, err := s.eventRepo.GetAll()
-	if err != nil {
-		return []dto.EventDetailResponse{}, err
-	}
-
-	var result []dto.EventDetailResponse
-	for _, e := range event {
-		eventResponse := dto.EventDetailResponse{
-			EventResponse: dto.EventResponse{
-				ID:        e.ID.String(),
-				Name:      e.Name,
-				Price:     e.Price,
-				StartDate: e.StartDate,
-				EndDate:   e.EndDate,
-			},
-		}
-
-		eventResponse.Status = true
-
-		if e.Registers >= e.Capacity {
-			eventResponse.Status = false
-		}
-
-		if time.Now().Before(e.StartDate.Add(-7 * time.Hour)) {
-			eventResponse.Status = false
-		}
-
-		if time.Now().After(e.EndDate.Add(-7 * time.Hour)) {
-			eventResponse.Status = false
-		}
-
-		eventResponse.RemainingTime = e.EndDate.Sub(time.Now())
-
-		result = append(result, eventResponse)
-	}
-
-	return result, nil
 }
