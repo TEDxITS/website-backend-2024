@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 var BASE_URL string
 
 const (
@@ -17,4 +19,5 @@ const (
 	CTX_KEY_ROLE_NAME = "role"
 
 	JWT_EXPIRE_TIME_IN_MINUTES = 120
+	WSOCKET_TIME_LIMIT         = time.Minute * time.Duration(3)
 )
