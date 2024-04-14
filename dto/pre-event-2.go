@@ -32,7 +32,7 @@ var (
 )
 
 type (
-	TicketPE2RSVPRequest struct {
+	PE2RSVPRequest struct {
 		Name       string `json:"name" form:"name" binding:"required"`
 		Email      string `json:"email" form:"email" binding:"required"`
 		Institute  string `json:"institute" form:"institute" binding:"required"`
@@ -45,7 +45,7 @@ type (
 		Essay                string `json:"essay" form:"essay" binding:"required"`
 	}
 
-	TicketPE2RSVPResponse struct {
+	PE2RSVPResponse struct {
 		ID         uuid.UUID `json:"id" form:"id"`
 		Name       string    `json:"name" form:"name"`
 		Email      string    `json:"email" form:"email"`
@@ -59,12 +59,12 @@ type (
 		Essay                string `json:"essay" form:"essay"`
 	}
 
-	TicketPE2RSVPCounter struct {
+	PE2RSVPCounter struct {
 		Total   int64 `json:"total" form:"total"`
 		Attends int64 `json:"attends" form:"attends"`
 	}
 
-	TicketPE2RSVPPaginationData struct {
+	PE2RSVPPaginationData struct {
 		ID                   uuid.UUID `json:"id" form:"id"`
 		Name                 string    `json:"name" form:"name"`
 		Institute            string    `json:"institute" form:"institute"`
@@ -73,16 +73,8 @@ type (
 		WillingToBeContacted bool      `json:"willing_to_be_contacted" form:"willing_to_be_contacted"`
 	}
 
-	TicketPE2RSVPPaginationResponse struct {
-		Data []TicketPE2RSVPPaginationData `json:"data"`
+	PE2RSVPPaginationResponse struct {
+		Data []PE2RSVPPaginationData `json:"data"`
 		PaginationMetadata
-	}
-
-	TicketMEConfirmPaymentRequest struct {
-		Email string `json:"email" form:"email" binding:"required"`
-	}
-
-	TicketMECheckInRequest struct {
-		Code string `json:"code" form:"code" binding:"required"`
 	}
 )

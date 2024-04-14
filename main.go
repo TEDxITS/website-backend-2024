@@ -35,8 +35,9 @@ func main() {
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
-		ticketService        service.TicketService        = service.NewTicketService(eventRepository, pe2RSVPRepo, userRepository, ticketRepository)
+		preEvent2Service     service.PreEvent2Service     = service.NewTicketService(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
+		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository)
 
 		// websocket hub
 		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
@@ -47,7 +48,8 @@ func main() {
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
 		linkShortenerController controller.LinkShortenerController = controller.NewLinkShortenerController(linkShortenerService)
 		eventController         controller.EventController         = controller.NewEventController(eventService)
-		ticketController        controller.PreEvent2Controller     = controller.NewTicketController(ticketService)
+		preEvent2Controller     controller.PreEvent2Controller     = controller.NewPreEvent2Controller(preEvent2Service)
+		mainEventController     controller.MainEventController     = controller.NewMainEventController(mainEventService)
 
 		// websocket handler
 		earlyBirdQueue websocket.TicketQueue = websocket.NewTicketQueue(earlyBirdHub, jwtService)
@@ -63,8 +65,8 @@ func main() {
 	routes.User(server, userController, jwtService)
 	routes.LinkShortener(server, linkShortenerController, jwtService)
 	routes.Event(server, eventController, jwtService)
-	routes.PreEvent2(server, ticketController, jwtService)
-	routes.MainEvent(server, jwtService)
+	routes.PreEvent2(server, preEvent2Controller, jwtService)
+	routes.MainEvent(server, mainEventController, jwtService)
 	routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
 
 	// database seeding, update existing data or create if not found

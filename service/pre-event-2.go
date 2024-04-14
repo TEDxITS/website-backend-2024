@@ -12,10 +12,10 @@ import (
 
 type (
 	PreEvent2Service interface {
-		CreatePE2RSVP(context.Context, dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error)
-		GetPE2RSVPPaginated(context.Context, dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error)
-		GetPE2RSVPDetail(context.Context, string) (dto.TicketPE2RSVPResponse, error)
-		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
+		CreatePE2RSVP(context.Context, dto.PE2RSVPRequest) (dto.PE2RSVPResponse, error)
+		GetPE2RSVPPaginated(context.Context, dto.PaginationQuery) (dto.PE2RSVPPaginationResponse, error)
+		GetPE2RSVPDetail(context.Context, string) (dto.PE2RSVPResponse, error)
+		GetPE2RSVPCounter(context.Context) (dto.PE2RSVPCounter, error)
 		GetPE2RSVPStatus(context.Context) (bool, error)
 	}
 
@@ -32,31 +32,31 @@ func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo reposito
 	}
 }
 
-func (s *preEvent2Service) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error) {
+func (s *preEvent2Service) CreatePE2RSVP(ctx context.Context, req dto.PE2RSVPRequest) (dto.PE2RSVPResponse, error) {
 	event, err := s.eventRepo.GetPE2Detail()
 	if err != nil {
-		return dto.TicketPE2RSVPResponse{}, err
+		return dto.PE2RSVPResponse{}, err
 	}
 
 	if event.Registers >= event.Capacity {
-		return dto.TicketPE2RSVPResponse{}, dto.ErrPE2RSVPFull
+		return dto.PE2RSVPResponse{}, dto.ErrPE2RSVPFull
 	}
 
 	if time.Now().Before(event.StartDate.Add(-7 * time.Hour)) {
-		return dto.TicketPE2RSVPResponse{}, dto.ErrPE2RSVPNotOpen
+		return dto.PE2RSVPResponse{}, dto.ErrPE2RSVPNotOpen
 	}
 
 	if time.Now().After(event.EndDate.Add(-7 * time.Hour)) {
-		return dto.TicketPE2RSVPResponse{}, dto.ErrPE2RSVPClosed
+		return dto.PE2RSVPResponse{}, dto.ErrPE2RSVPClosed
 	}
 
 	exist, err := s.pe2RSVPRepo.CheckEmailExist(req.Email)
 	if err != nil {
-		return dto.TicketPE2RSVPResponse{}, err
+		return dto.PE2RSVPResponse{}, err
 	}
 
 	if exist {
-		return dto.TicketPE2RSVPResponse{}, dto.ErrPE2RSVPEmailRegistered
+		return dto.PE2RSVPResponse{}, dto.ErrPE2RSVPEmailRegistered
 	}
 
 	rsvp := entity.PE2RSVP{
@@ -73,10 +73,10 @@ func (s *preEvent2Service) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2R
 
 	res, err := s.pe2RSVPRepo.Create(rsvp)
 	if err != nil {
-		return dto.TicketPE2RSVPResponse{}, err
+		return dto.PE2RSVPResponse{}, err
 	}
 
-	return dto.TicketPE2RSVPResponse{
+	return dto.PE2RSVPResponse{
 		ID:                   res.ID,
 		Name:                 res.Name,
 		Email:                res.Email,
@@ -90,7 +90,7 @@ func (s *preEvent2Service) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2R
 	}, nil
 }
 
-func (s *preEvent2Service) GetPE2RSVPPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error) {
+func (s *preEvent2Service) GetPE2RSVPPaginated(ctx context.Context, req dto.PaginationQuery) (dto.PE2RSVPPaginationResponse, error) {
 	var limit int
 	var page int
 
@@ -106,12 +106,12 @@ func (s *preEvent2Service) GetPE2RSVPPaginated(ctx context.Context, req dto.Pagi
 
 	rsvps, maxPage, count, err := s.pe2RSVPRepo.GetAllPagination(req.Search, limit, page)
 	if err != nil {
-		return dto.TicketPE2RSVPPaginationResponse{}, err
+		return dto.PE2RSVPPaginationResponse{}, err
 	}
 
-	var result []dto.TicketPE2RSVPPaginationData
+	var result []dto.PE2RSVPPaginationData
 	for _, rsvp := range rsvps {
-		result = append(result, dto.TicketPE2RSVPPaginationData{
+		result = append(result, dto.PE2RSVPPaginationData{
 			ID:                   rsvp.ID,
 			Name:                 rsvp.Name,
 			Institute:            rsvp.Institute,
@@ -121,7 +121,7 @@ func (s *preEvent2Service) GetPE2RSVPPaginated(ctx context.Context, req dto.Pagi
 		})
 	}
 
-	return dto.TicketPE2RSVPPaginationResponse{
+	return dto.PE2RSVPPaginationResponse{
 		Data: result,
 		PaginationMetadata: dto.PaginationMetadata{
 			Page:    page,
@@ -132,13 +132,13 @@ func (s *preEvent2Service) GetPE2RSVPPaginated(ctx context.Context, req dto.Pagi
 	}, nil
 }
 
-func (s *preEvent2Service) GetPE2RSVPDetail(ctx context.Context, id string) (dto.TicketPE2RSVPResponse, error) {
+func (s *preEvent2Service) GetPE2RSVPDetail(ctx context.Context, id string) (dto.PE2RSVPResponse, error) {
 	attendee, err := s.pe2RSVPRepo.GetById(id)
 	if err != nil {
-		return dto.TicketPE2RSVPResponse{}, err
+		return dto.PE2RSVPResponse{}, err
 	}
 
-	return dto.TicketPE2RSVPResponse{
+	return dto.PE2RSVPResponse{
 		ID:                   attendee.ID,
 		Name:                 attendee.Name,
 		Email:                attendee.Email,
@@ -152,18 +152,18 @@ func (s *preEvent2Service) GetPE2RSVPDetail(ctx context.Context, id string) (dto
 	}, nil
 }
 
-func (s *preEvent2Service) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSVPCounter, error) {
+func (s *preEvent2Service) GetPE2RSVPCounter(ctx context.Context) (dto.PE2RSVPCounter, error) {
 	total, err := s.pe2RSVPRepo.CountTotal()
 	if err != nil {
-		return dto.TicketPE2RSVPCounter{}, err
+		return dto.PE2RSVPCounter{}, err
 	}
 
 	attends, err := s.pe2RSVPRepo.CountAttends()
 	if err != nil {
-		return dto.TicketPE2RSVPCounter{}, err
+		return dto.PE2RSVPCounter{}, err
 	}
 
-	return dto.TicketPE2RSVPCounter{
+	return dto.PE2RSVPCounter{
 		Total:   total,
 		Attends: attends,
 	}, nil

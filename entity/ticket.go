@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type Ticket struct {
-	TicketID string `json:"ticket_id" gorm:"primary_key" form:"ticket_id"`
+	TicketID string `json:"ticket_id" form:"ticket_id" gorm:"primaryKey" `
 	UserID   string `json:"user_id" form:"user_id"`
 	EventID  string `json:"event_id" form:"event_id"`
 
