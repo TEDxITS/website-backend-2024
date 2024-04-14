@@ -17,6 +17,10 @@ type (
 		GetPE2RSVPDetail(ctx *gin.Context)
 		GetPE2RSVPCounter(ctx *gin.Context)
 		GetPE2RSVPStatus(ctx *gin.Context)
+
+		ConfirmPaymentME(ctx *gin.Context)
+		CheckInME(ctx *gin.Context)
+		GetMEStatus(ctx *gin.Context)
 	}
 
 	ticketController struct {
@@ -114,5 +118,55 @@ func (c *ticketController) GetPE2RSVPStatus(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_TICKET, status)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *ticketController) ConfirmPaymentME(ctx *gin.Context) {
+	var req dto.TicketMEConfirmPaymentRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	err := c.ticketService.ConfirmPaymentME(ctx.Request.Context(), req)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_CONFIRM_PAYMENT, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_CONFIRM_PAYMENT, nil)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *ticketController) CheckInME(ctx *gin.Context) {
+	var req dto.TicketMECheckInRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	err := c.ticketService.CheckInME(ctx.Request.Context(), req)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_CHECK_IN, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_CHECK_IN, nil)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *ticketController) GetMEStatus(ctx *gin.Context) {
+	result, err := c.ticketService.GetMEStatus(ctx.Request.Context())
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_EVENT, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_EVENT, result)
 	ctx.JSON(http.StatusOK, res)
 }

@@ -1,13 +1,17 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"os"
+	"text/template"
 	"time"
 
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/TEDxITS/website-backend-2024/entity"
 	"github.com/TEDxITS/website-backend-2024/repository"
+	"github.com/TEDxITS/website-backend-2024/utils"
 )
 
 type (
@@ -17,18 +21,26 @@ type (
 		GetPE2RSVPDetail(context.Context, string) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
 		GetPE2RSVPStatus(context.Context) (bool, error)
+
+		ConfirmPaymentME(context.Context, dto.TicketMEConfirmPaymentRequest) error
+		CheckInME(context.Context, dto.TicketMECheckInRequest) error
+		GetMEStatus(context.Context) ([]dto.EventDetailResponse, error)
 	}
 
 	ticketService struct {
 		eventRepo   repository.EventRepository
 		pe2RSVPRepo repository.PE2RSVPRepository
+		userRepo    repository.UserRepository
+		ticketRepo  repository.TicketRepository
 	}
 )
 
-func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository) TicketService {
+func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository, userRepo repository.UserRepository, ticketRepo repository.TicketRepository) TicketService {
 	return &ticketService{
 		eventRepo:   eventRepo,
 		pe2RSVPRepo: pe2RSVPRepo,
+		userRepo:    userRepo,
+		ticketRepo:  ticketRepo,
 	}
 }
 
@@ -188,4 +200,116 @@ func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (s *ticketService) ConfirmPaymentME(ctx context.Context, req dto.TicketMEConfirmPaymentRequest) error {
+	email, err := s.userRepo.GetUserByEmail(req.Email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	ticket, err := s.ticketRepo.FindByUserID(email.ID.String())
+	if err != nil {
+		return dto.ErrTicketNotFound
+	}
+
+	confirmed := true
+	ticket.PaymentConfirmed = &confirmed
+	_, err = s.ticketRepo.UpdateTicket(ticket)
+	if err != nil {
+		return err
+	}
+
+	readHtml, err := os.ReadFile("./utils/template/confirmation_payment.html")
+
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		Email    string
+		TicketID string
+	}{
+		Email:    req.Email,
+		TicketID: ticket.TicketID,
+	}
+
+	tmpl, err := template.New("custom").Parse(string(readHtml))
+	if err != nil {
+		return err
+	}
+
+	var strMail bytes.Buffer
+	if err := tmpl.Execute(&strMail, data); err != nil {
+		return err
+	}
+
+	emailData := utils.Email{
+		Email:   req.Email,
+		Subject: "Confirmation Payment",
+		Body:    strMail.String(),
+	}
+
+	err = utils.SendMail(emailData)
+	if err != nil {
+		return dto.ErrSendEmail
+	}
+
+	return nil
+}
+
+func (s *ticketService) CheckInME(ctx context.Context, req dto.TicketMECheckInRequest) error {
+	ticket, err := s.ticketRepo.FindByTicketID(req.Code)
+	if err != nil {
+		return dto.ErrTicketNotFound
+	}
+
+	checked := true
+	ticket.CheckedIn = &checked
+	_, err = s.ticketRepo.UpdateTicket(ticket)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *ticketService) GetMEStatus(ctx context.Context) ([]dto.EventDetailResponse, error) {
+	event, err := s.eventRepo.GetAll()
+	if err != nil {
+		return []dto.EventDetailResponse{}, err
+	}
+
+	var result []dto.EventDetailResponse
+	for _, e := range event {
+		eventResponse := dto.EventDetailResponse{
+			EventResponse: dto.EventResponse{
+				ID:        e.ID.String(),
+				Name:      e.Name,
+				Price:     e.Price,
+				StartDate: e.StartDate,
+				EndDate:   e.EndDate,
+			},
+		}
+
+		eventResponse.Status = true
+
+		if e.Registers >= e.Capacity {
+			eventResponse.Status = false
+		}
+
+		if time.Now().Before(e.StartDate.Add(-7 * time.Hour)) {
+			eventResponse.Status = false
+		}
+
+		if time.Now().After(e.EndDate.Add(-7 * time.Hour)) {
+			eventResponse.Status = false
+		}
+
+		eventResponse.RemainingTime = e.EndDate.Sub(time.Now())
+
+		result = append(result, eventResponse)
+	}
+
+	return result, nil
 }

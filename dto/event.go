@@ -27,4 +27,14 @@ type (
 		StartDate   time.Time `json:"start_date"`
 		EndDate     time.Time `json:"end_date"`
 	}
+
+	EventDetailResponse struct {
+		EventResponse
+		Status        bool          `json:"status"`
+		RemainingTime time.Duration `json:"remaining_time"`
+	}
+
+	// EventsDetailResponse struct {
+	// 	Events []EventDetailResponse `json:"events"`
+	// }
 )

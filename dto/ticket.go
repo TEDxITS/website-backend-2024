@@ -8,12 +8,18 @@ import (
 
 const (
 	// Failed
-	MESSAGE_FAILED_CREATE_TICKET = "failed create ticket"
-	MESSAGE_FAILED_GET_TICKET    = "failed get ticket"
+	MESSAGE_FAILED_CREATE_TICKET   = "failed create ticket"
+	MESSAGE_FAILED_GET_TICKET      = "failed get ticket"
+	MESSAGE_FAILED_CONFIRM_PAYMENT = "failed confirm payment"
+	MESSAGE_FAILED_CHECK_IN        = "failed check in"
+	MESSAGE_FAILED_EVENT           = "failed get event"
 
 	// Success
-	MESSAGE_SUCCESS_CREATE_TICKET = "success create ticket"
-	MESSAGE_SUCCESS_GET_TICKET    = "success get ticket"
+	MESSAGE_SUCCESS_CREATE_TICKET   = "success create ticket"
+	MESSAGE_SUCCESS_GET_TICKET      = "success get ticket"
+	MESSAGE_SUCCESS_CONFIRM_PAYMENT = "success confirm payment"
+	MESSAGE_SUCCESS_CHECK_IN        = "success check in"
+	MESSAGE_SUCCESS_EVENT           = "success get event"
 )
 
 var (
@@ -22,6 +28,7 @@ var (
 	ErrPE2RSVPClosed          = errors.New("pre event 2 RSVP is closed")
 	ErrPE2RSVPFull            = errors.New("pre event 2 RSVP is full")
 	ErrPE2RSVPEmailRegistered = errors.New("email already registered")
+	ErrTicketNotFound         = errors.New("ticket not found")
 )
 
 type (
@@ -69,5 +76,13 @@ type (
 	TicketPE2RSVPPaginationResponse struct {
 		Data []TicketPE2RSVPPaginationData `json:"data"`
 		PaginationMetadata
+	}
+
+	TicketMEConfirmPaymentRequest struct {
+		Email string `json:"email" form:"email" binding:"required"`
+	}
+
+	TicketMECheckInRequest struct {
+		Code string `json:"code" form:"code" binding:"required"`
 	}
 )
