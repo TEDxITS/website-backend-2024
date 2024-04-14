@@ -11,33 +11,28 @@ import (
 )
 
 type (
-	TicketService interface {
+	PreEvent2Service interface {
 		CreatePE2RSVP(context.Context, dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPPaginated(context.Context, dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error)
 		GetPE2RSVPDetail(context.Context, string) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
 		GetPE2RSVPStatus(context.Context) (bool, error)
-		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error)
-		GetMainEventDetail(context.Context, string) (dto.TicketMainEventResponse, error)
-		GetMainEventCounter(context.Context) (dto.TicketMainEventCounter, error)
 	}
 
-	ticketService struct {
+	preEvent2Service struct {
 		eventRepo   repository.EventRepository
 		pe2RSVPRepo repository.PE2RSVPRepository
-		ticketRepo  repository.TicketRepository
 	}
 )
 
-func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository, ticketRepo repository.TicketRepository) TicketService {
-	return &ticketService{
+func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository) PreEvent2Service {
+	return &preEvent2Service{
 		eventRepo:   eventRepo,
 		pe2RSVPRepo: pe2RSVPRepo,
-		ticketRepo:  ticketRepo,
 	}
 }
 
-func (s *ticketService) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error) {
+func (s *preEvent2Service) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVPRequest) (dto.TicketPE2RSVPResponse, error) {
 	event, err := s.eventRepo.GetPE2Detail()
 	if err != nil {
 		return dto.TicketPE2RSVPResponse{}, err
@@ -95,7 +90,7 @@ func (s *ticketService) CreatePE2RSVP(ctx context.Context, req dto.TicketPE2RSVP
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error) {
+func (s *preEvent2Service) GetPE2RSVPPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketPE2RSVPPaginationResponse, error) {
 	var limit int
 	var page int
 
@@ -137,7 +132,7 @@ func (s *ticketService) GetPE2RSVPPaginated(ctx context.Context, req dto.Paginat
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPDetail(ctx context.Context, id string) (dto.TicketPE2RSVPResponse, error) {
+func (s *preEvent2Service) GetPE2RSVPDetail(ctx context.Context, id string) (dto.TicketPE2RSVPResponse, error) {
 	attendee, err := s.pe2RSVPRepo.GetById(id)
 	if err != nil {
 		return dto.TicketPE2RSVPResponse{}, err
@@ -157,7 +152,7 @@ func (s *ticketService) GetPE2RSVPDetail(ctx context.Context, id string) (dto.Ti
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSVPCounter, error) {
+func (s *preEvent2Service) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSVPCounter, error) {
 	total, err := s.pe2RSVPRepo.CountTotal()
 	if err != nil {
 		return dto.TicketPE2RSVPCounter{}, err
@@ -174,7 +169,7 @@ func (s *ticketService) GetPE2RSVPCounter(ctx context.Context) (dto.TicketPE2RSV
 	}, nil
 }
 
-func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
+func (s *preEvent2Service) GetPE2RSVPStatus(context.Context) (bool, error) {
 	event, err := s.eventRepo.GetPE2Detail()
 	if err != nil {
 		return false, err
@@ -193,102 +188,4 @@ func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
 	}
 
 	return true, nil
-}
-
-func (s *ticketService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error) {
-	var limit int
-	var page int
-
-	limit = req.PerPage
-	if limit <= 0 {
-		limit = constants.ENUM_PAGINATION_LIMIT
-	}
-
-	page = req.Page
-	if page <= 0 {
-		page = constants.ENUM_PAGINATION_PAGE
-	}
-
-	rsvps, maxPage, count, err := s.ticketRepo.GetAllPagination(req.Search, limit, page)
-	if err != nil {
-		return dto.TicketMainEventPaginationResponse{}, err
-	}
-
-	var result []dto.TicketMainEventPaginationData
-	for _, rsvp := range rsvps {
-		ticket, _ := s.ticketRepo.GetTicketByUserId(rsvp.ID.String())
-		event, _ := s.ticketRepo.GetEventById(ticket.EventID)
-		result = append(result, dto.TicketMainEventPaginationData{
-			ID:        ticket.TicketID,
-			Name:      rsvp.Name,
-			Email:     rsvp.Email,
-			Confirmed: *ticket.PaymentConfirmed,
-			CheckedIn: *ticket.CheckedIn,
-			EventName: event.Name,
-			Price:     event.Price,
-		})
-	}
-
-	return dto.TicketMainEventPaginationResponse{
-		Data: result,
-		PaginationMetadata: dto.PaginationMetadata{
-			Page:    page,
-			PerPage: limit,
-			MaxPage: maxPage,
-			Count:   count,
-		},
-	}, nil
-}
-
-func (s *ticketService) GetMainEventDetail(ctx context.Context, id string) (dto.TicketMainEventResponse, error) {
-	ticket, err := s.ticketRepo.GetTicketById(id)
-	if err != nil {
-		return dto.TicketMainEventResponse{}, err
-	}
-	event, err := s.ticketRepo.GetEventById(ticket.EventID)
-	if err != nil {
-		return dto.TicketMainEventResponse{}, err
-	}
-	user, err := s.ticketRepo.GetUserById(ticket.UserID)
-	if err != nil {
-		return dto.TicketMainEventResponse{}, err
-	}
-	return dto.TicketMainEventResponse{
-		ID:        ticket.TicketID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Confirmed: *ticket.PaymentConfirmed,
-		CheckedIn: *ticket.CheckedIn,
-		EventName: event.Name,
-		Price:     event.Price,
-
-		Handphone: ticket.Handphone,
-		Birthdate: ticket.Birthdate,
-		Seat:      ticket.Seat,
-		Payment:   ticket.Payment,
-		WithKit:   *event.WithKit,
-	}, nil
-}
-
-func (s *ticketService) GetMainEventCounter(ctx context.Context) (dto.TicketMainEventCounter, error) {
-	total, err := s.ticketRepo.CountTotal()
-	if err != nil {
-		return dto.TicketMainEventCounter{}, err
-	}
-
-	confirmed_payments, err := s.ticketRepo.CountConfirmedPayments()
-	if err != nil {
-		return dto.TicketMainEventCounter{}, err
-	}
-
-	checked_ins, err := s.ticketRepo.CountCheckedIns()
-	if err != nil {
-		return dto.TicketMainEventCounter{}, err
-	}
-
-	return dto.TicketMainEventCounter{
-		Total:             total,
-		ConfirmedPayments: confirmed_payments,
-		CheckedIns:        checked_ins,
-	}, nil
 }
