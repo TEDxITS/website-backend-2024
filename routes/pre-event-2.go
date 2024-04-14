@@ -9,7 +9,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/service"
 )
 
-func Ticket(route *gin.Engine, ticketController controller.TicketController, jwtService service.JWTService) {
+func PreEvent2(route *gin.Engine, ticketController controller.PreEvent2Controller, jwtService service.JWTService) {
 	routes := route.Group("/api/ticket")
 	{
 		routes.POST("/pre-event-2", ticketController.CreatePE2RSVP)
