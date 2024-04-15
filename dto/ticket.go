@@ -70,4 +70,19 @@ type (
 		Data []TicketPE2RSVPPaginationData `json:"data"`
 		PaginationMetadata
 	}
+
+	TicketMainEventPaginationData struct {
+		ID        string `json:"id" form:"id"`
+		Name      string `json:"name" form:"name"`
+		Email     string `json:"email" form:"email"`
+		Confirmed bool   `json:"confirmed" form:"confirmed"`
+		CheckedIn bool   `json:"checked_in" form:"checked_in"`
+		EventName string `json:"event_name" form:"event_name"`
+		Price     int    `json:"price" form:"price"`
+	}
+
+	TicketMainEventPaginationResponse struct {
+		Data []TicketMainEventPaginationData `json:"data"`
+		PaginationMetadata
+	}
 )

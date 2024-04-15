@@ -17,18 +17,21 @@ type (
 		GetPE2RSVPDetail(context.Context, string) (dto.TicketPE2RSVPResponse, error)
 		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
 		GetPE2RSVPStatus(context.Context) (bool, error)
+		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error)
 	}
 
 	ticketService struct {
 		eventRepo   repository.EventRepository
 		pe2RSVPRepo repository.PE2RSVPRepository
+		ticketRepo  repository.TicketRepository
 	}
 )
 
-func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository) TicketService {
+func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository, ticketRepo repository.TicketRepository) TicketService {
 	return &ticketService{
 		eventRepo:   eventRepo,
 		pe2RSVPRepo: pe2RSVPRepo,
+		ticketRepo:  ticketRepo,
 	}
 }
 
@@ -188,4 +191,49 @@ func (s *ticketService) GetPE2RSVPStatus(context.Context) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (s *ticketService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error) {
+	var limit int
+	var page int
+
+	limit = req.PerPage
+	if limit <= 0 {
+		limit = constants.ENUM_PAGINATION_LIMIT
+	}
+
+	page = req.Page
+	if page <= 0 {
+		page = constants.ENUM_PAGINATION_PAGE
+	}
+
+	rsvps, maxPage, count, err := s.ticketRepo.GetAllPagination(req.Search, limit, page)
+	if err != nil {
+		return dto.TicketMainEventPaginationResponse{}, err
+	}
+
+	var result []dto.TicketMainEventPaginationData
+	for _, rsvp := range rsvps {
+		ticket, _ := s.ticketRepo.GetTicketByUserId(rsvp.ID.String())
+		event, _ := s.ticketRepo.GetEventByID(ticket.EventID)
+		result = append(result, dto.TicketMainEventPaginationData{
+			ID:        ticket.TicketID,
+			Name:      rsvp.Name,
+			Email:     rsvp.Email,
+			Confirmed: *ticket.PaymentConfirmed,
+			CheckedIn: *ticket.CheckedIn,
+			EventName: event.Name,
+			Price:     event.Price,
+		})
+	}
+
+	return dto.TicketMainEventPaginationResponse{
+		Data: result,
+		PaginationMetadata: dto.PaginationMetadata{
+			Page:    page,
+			PerPage: limit,
+			MaxPage: maxPage,
+			Count:   count,
+		},
+	}, nil
 }
