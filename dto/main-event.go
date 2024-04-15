@@ -1,7 +1,5 @@
 package dto
 
-import "time"
-
 type (
 	MainEventConfirmPaymentRequest struct {
 		Email string `json:"email" form:"email" binding:"required"`
@@ -14,6 +12,13 @@ type (
 	MainEventDetailResponse struct {
 		EventResponse
 		Status        bool          `json:"status"`
-		RemainingTime time.Duration `json:"remaining_time"`
+		RemainingTime RemainingTime `json:"remaining_time"`
+	}
+
+	RemainingTime struct {
+		Days    int `json:"days"`
+		Hours   int `json:"hours"`
+		Minutes int `json:"minutes"`
+		Seconds int `json:"seconds"`
 	}
 )

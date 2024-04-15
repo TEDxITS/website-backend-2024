@@ -107,13 +107,13 @@ func (s *mainEventService) CheckIn(ctx context.Context, req dto.MainEventCheckIn
 }
 
 func (s *mainEventService) GetStatus(ctx context.Context) ([]dto.MainEventDetailResponse, error) {
-	event, err := s.eventRepo.GetAll()
+	events, err := s.eventRepo.GetAllExcept("7de24efe-0aec-469a-bf0c-8fa8cae3ff3f")
 	if err != nil {
 		return []dto.MainEventDetailResponse{}, err
 	}
 
 	var result []dto.MainEventDetailResponse
-	for _, e := range event {
+	for _, e := range events {
 		eventResponse := dto.MainEventDetailResponse{
 			EventResponse: dto.EventResponse{
 				ID:        e.ID.String(),
@@ -138,7 +138,20 @@ func (s *mainEventService) GetStatus(ctx context.Context) ([]dto.MainEventDetail
 			eventResponse.Status = false
 		}
 
-		eventResponse.RemainingTime = e.EndDate.Sub(time.Now())
+		difference := e.EndDate.Add(-7 * time.Hour).Sub(time.Now())
+
+		total := int(difference.Seconds())
+		days := int(total / (60 * 60 * 24))
+		hours := int(total / (60 * 60) % 24)
+		minutes := int(total/60) % 60
+		seconds := int(total % 60)
+
+		eventResponse.RemainingTime = dto.RemainingTime{
+			Days:    days,
+			Hours:   hours,
+			Minutes: minutes,
+			Seconds: seconds,
+		}
 
 		result = append(result, eventResponse)
 	}
