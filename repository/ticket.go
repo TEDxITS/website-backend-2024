@@ -13,7 +13,9 @@ type (
 		CreateTicket(ticket entity.Ticket) (entity.Ticket, error)
 		GetAllPagination(search string, limit, page int) ([]entity.User, int64, int64, error)
 		GetTicketByUserId(userId string) (entity.Ticket, error)
-		GetEventByID(id string) (entity.Event, error)
+		GetEventById(id string) (entity.Event, error)
+		GetTicketById(id string) (entity.Ticket, error)
+		GetUserById(id string) (entity.User, error)
 	}
 
 	ticketRepository struct {
@@ -75,10 +77,26 @@ func (r *ticketRepository) GetTicketByUserId(userId string) (entity.Ticket, erro
 	return ticket, nil
 }
 
-func (r *ticketRepository) GetEventByID(id string) (entity.Event, error) {
+func (r *ticketRepository) GetEventById(id string) (entity.Event, error) {
 	var event entity.Event
 	if err := r.db.Where("id = ?", id).Take(&event).Error; err != nil {
 		return entity.Event{}, err
 	}
 	return event, nil
+}
+
+func (r *ticketRepository) GetTicketById(id string) (entity.Ticket, error) {
+	var ticket entity.Ticket
+	if err := r.db.Where("ticket_id = ?", id).Take(&ticket).Error; err != nil {
+		return entity.Ticket{}, err
+	}
+	return ticket, nil
+}
+
+func (r *ticketRepository) GetUserById(id string) (entity.User, error) {
+	var user entity.User
+	if err := r.db.Where("id = ?", id).Take(&user).Error; err != nil {
+		return entity.User{}, err
+	}
+	return user, nil
 }

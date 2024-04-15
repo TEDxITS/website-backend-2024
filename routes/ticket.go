@@ -18,5 +18,6 @@ func Ticket(route *gin.Engine, ticketController controller.TicketController, jwt
 		routes.GET("/pre-event-2/status", ticketController.GetPE2RSVPStatus)
 		routes.GET("/pre-event-2/:id", middleware.Authenticate(jwtService), middleware.OnlyAllow(constants.ENUM_ROLE_ADMIN), ticketController.GetPE2RSVPDetail)
 		routes.GET("/main-event", middleware.Authenticate(jwtService), middleware.OnlyAllow(constants.ENUM_ROLE_ADMIN), ticketController.GetMainEventPaginated)
+		routes.GET("/main-event/:id", middleware.Authenticate(jwtService), middleware.OnlyAllow(constants.ENUM_ROLE_ADMIN), ticketController.GetMainEventDetail)
 	}
 }

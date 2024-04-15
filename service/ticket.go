@@ -18,6 +18,7 @@ type (
 		GetPE2RSVPCounter(context.Context) (dto.TicketPE2RSVPCounter, error)
 		GetPE2RSVPStatus(context.Context) (bool, error)
 		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error)
+		GetMainEventDetail(context.Context, string) (dto.TicketMainEventResponse, error)
 	}
 
 	ticketService struct {
@@ -215,7 +216,7 @@ func (s *ticketService) GetMainEventPaginated(ctx context.Context, req dto.Pagin
 	var result []dto.TicketMainEventPaginationData
 	for _, rsvp := range rsvps {
 		ticket, _ := s.ticketRepo.GetTicketByUserId(rsvp.ID.String())
-		event, _ := s.ticketRepo.GetEventByID(ticket.EventID)
+		event, _ := s.ticketRepo.GetEventById(ticket.EventID)
 		result = append(result, dto.TicketMainEventPaginationData{
 			ID:        ticket.TicketID,
 			Name:      rsvp.Name,
@@ -235,5 +236,35 @@ func (s *ticketService) GetMainEventPaginated(ctx context.Context, req dto.Pagin
 			MaxPage: maxPage,
 			Count:   count,
 		},
+	}, nil
+}
+
+func (s *ticketService) GetMainEventDetail(ctx context.Context, id string) (dto.TicketMainEventResponse, error) {
+	ticket, err := s.ticketRepo.GetTicketById(id)
+	if err != nil {
+		return dto.TicketMainEventResponse{}, err
+	}
+	event, err := s.ticketRepo.GetEventById(ticket.EventID)
+	if err != nil {
+		return dto.TicketMainEventResponse{}, err
+	}
+	user, err := s.ticketRepo.GetUserById(ticket.UserID)
+	if err != nil {
+		return dto.TicketMainEventResponse{}, err
+	}
+	return dto.TicketMainEventResponse{
+		ID:        ticket.TicketID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Confirmed: *ticket.PaymentConfirmed,
+		CheckedIn: *ticket.CheckedIn,
+		EventName: event.Name,
+		Price:     event.Price,
+
+		Handphone: ticket.Handphone,
+		Birthdate: ticket.Birthdate,
+		Seat:      ticket.Seat,
+		Payment:   ticket.Payment,
+		WithKit:   *event.WithKit,
 	}, nil
 }
