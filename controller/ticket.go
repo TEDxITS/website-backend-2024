@@ -19,6 +19,7 @@ type (
 		GetPE2RSVPStatus(ctx *gin.Context)
 		GetMainEventPaginated(ctx *gin.Context)
 		GetMainEventDetail(ctx *gin.Context)
+		GetMainEventCounter(ctx *gin.Context)
 	}
 
 	ticketController struct {
@@ -147,6 +148,18 @@ func (c *ticketController) GetMainEventDetail(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	result, err := c.ticketService.GetMainEventDetail(ctx.Request.Context(), id)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_TICKET, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *ticketController) GetMainEventCounter(ctx *gin.Context) {
+	result, err := c.ticketService.GetMainEventCounter(ctx.Request.Context())
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)

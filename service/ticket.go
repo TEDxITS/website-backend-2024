@@ -19,6 +19,7 @@ type (
 		GetPE2RSVPStatus(context.Context) (bool, error)
 		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error)
 		GetMainEventDetail(context.Context, string) (dto.TicketMainEventResponse, error)
+		GetMainEventCounter(context.Context) (dto.TicketMainEventCounter, error)
 	}
 
 	ticketService struct {
@@ -266,5 +267,28 @@ func (s *ticketService) GetMainEventDetail(ctx context.Context, id string) (dto.
 		Seat:      ticket.Seat,
 		Payment:   ticket.Payment,
 		WithKit:   *event.WithKit,
+	}, nil
+}
+
+func (s *ticketService) GetMainEventCounter(ctx context.Context) (dto.TicketMainEventCounter, error) {
+	total, err := s.ticketRepo.CountTotal()
+	if err != nil {
+		return dto.TicketMainEventCounter{}, err
+	}
+
+	confirmed_payments, err := s.ticketRepo.CountConfirmedPayments()
+	if err != nil {
+		return dto.TicketMainEventCounter{}, err
+	}
+
+	checked_ins, err := s.ticketRepo.CountCheckedIns()
+	if err != nil {
+		return dto.TicketMainEventCounter{}, err
+	}
+
+	return dto.TicketMainEventCounter{
+		Total:             total,
+		ConfirmedPayments: confirmed_payments,
+		CheckedIns:        checked_ins,
 	}, nil
 }

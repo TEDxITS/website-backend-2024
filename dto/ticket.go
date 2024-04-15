@@ -102,4 +102,10 @@ type (
 		Payment   string    `json:"payment" form:"payment"`
 		WithKit   bool      `json:"with_kit" form:"with_kit"`
 	}
+
+	TicketMainEventCounter struct {
+		Total             int64 `json:"total" form:"total"`
+		ConfirmedPayments int64 `json:"confirmed_payments" form:"confirmed_payments"`
+		CheckedIns        int64 `json:"checked_ins" form:"checked_ins"`
+	}
 )

@@ -16,6 +16,9 @@ type (
 		GetEventById(id string) (entity.Event, error)
 		GetTicketById(id string) (entity.Ticket, error)
 		GetUserById(id string) (entity.User, error)
+		CountTotal() (int64, error)
+		CountConfirmedPayments() (int64, error)
+		CountCheckedIns() (int64, error)
 	}
 
 	ticketRepository struct {
@@ -99,4 +102,31 @@ func (r *ticketRepository) GetUserById(id string) (entity.User, error) {
 		return entity.User{}, err
 	}
 	return user, nil
+}
+
+func (r *ticketRepository) CountTotal() (int64, error) {
+	var count int64
+	if err := r.db.Model(&entity.Ticket{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *ticketRepository) CountConfirmedPayments() (int64, error) {
+	var count int64
+	if err := r.db.Model(&entity.Ticket{}).Where("payment_confirmed = ?", true).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *ticketRepository) CountCheckedIns() (int64, error) {
+	var count int64
+	if err := r.db.Model(&entity.Ticket{}).Where("checked_in = ?", true).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
