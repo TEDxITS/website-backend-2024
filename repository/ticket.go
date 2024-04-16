@@ -22,6 +22,10 @@ type (
 		CountTotal() (int64, error)
 		CountConfirmedPayments() (int64, error)
 		CountCheckedIns() (int64, error)
+		FindByUserID(userID string) (entity.Ticket, error)
+		UpdateTicket(ticket entity.Ticket) (entity.Ticket, error)
+		FindByTicketID(ticketID string) (entity.Ticket, error)
+		FindAll() ([]entity.Ticket, error)
 	}
 
 	ticketRepository struct {
