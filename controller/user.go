@@ -20,6 +20,7 @@ type (
 		GetAllPagination(ctx *gin.Context)
 		Verify(ctx *gin.Context)
 		ResendVerifyEmail(ctx *gin.Context)
+		ResetPassword(ctx *gin.Context)
 	}
 
 	userController struct {
@@ -177,4 +178,33 @@ func (c *userController) GetAllPagination(ctx *gin.Context) {
 		Meta:    result.PaginationMetadata,
 	}
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *userController) ResetPassword(ctx *gin.Context) {
+	token := ctx.Query("token")
+
+	userId, _, err := c.jwtService.GetPayloadInsideToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_VERIFY_USER, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	var password dto.UserResetPasswordRequest
+	if err := ctx.ShouldBind(&password); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	err = c.userService.ResetPassword(ctx.Request.Context(), userId, password)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_RESET_PASSWORD, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_RESET_PASSWORD, nil)
+	ctx.JSON(http.StatusOK, res)
+
 }

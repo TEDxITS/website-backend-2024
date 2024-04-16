@@ -12,6 +12,7 @@ const (
 	MESSAGE_FAILED_UPDATE_USER         = "failed update user"
 	MESSAGE_FAILED_VERIFY_USER         = "failed verify user"
 	MESSAGE_FAILED_RESEND_VERIFY_EMAIL = "failed resend verify email"
+	MESSAGE_FAILED_RESET_PASSWORD      = "failed reset password"
 
 	// Success
 	MESSAGE_SUCCESS_REGISTER_USER       = "success create user. Please verify your email to activate your account"
@@ -20,6 +21,7 @@ const (
 	MESSAGE_SUCCESS_UPDATE_USER         = "success update user"
 	MESSAGE_SUCCESS_VERIFY_USER         = "success verify user"
 	MESSAGE_SUCCESS_RESEND_VERIFY_EMAIL = "success resend verify email"
+	MESSAGE_SUCCESS_RESET_PASSWORD      = "success reset password"
 )
 
 var (
@@ -38,6 +40,7 @@ var (
 	ErrDecryptToken              = errors.New("failed to decrypt token")
 	ErrVerifyEmail               = errors.New("failed to verify email")
 	ErrInvalidToken              = errors.New("invalid token")
+	ErrHashPassword              = errors.New("failed to hash password")
 )
 
 type (
@@ -72,5 +75,9 @@ type (
 
 	UserResendVerifyEmailResponse struct {
 		Email string `json:"email"`
+	}
+
+	UserResetPasswordRequest struct {
+		Password string `json:"password" form:"password" binding:"required"`
 	}
 )

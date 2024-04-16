@@ -26,6 +26,7 @@ type (
 		generateVerificationEmail(userEmail string) (utils.Email, error)
 		SendVerifyEmail(ctx context.Context, email string) error
 		VerifyEmail(ctx context.Context, token string) error
+		ResetPassword(ctx context.Context, token string, req dto.UserResetPasswordRequest) error
 	}
 
 	userService struct {
@@ -272,4 +273,24 @@ func (s *userService) GetAllPagination(ctx context.Context, req dto.PaginationQu
 			Count:   count,
 		},
 	}, nil
+}
+
+func (s *userService) ResetPassword(ctx context.Context, userId string, req dto.UserResetPasswordRequest) error {
+	user, err := s.userRepo.GetUserById(userId)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	hashedPassword, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		return dto.ErrHashPassword
+	}
+
+	user.Password = hashedPassword
+	_, err = s.userRepo.UpdateUser(user)
+	if err != nil {
+		return dto.ErrUpdateUser
+	}
+
+	return nil
 }
