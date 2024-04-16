@@ -18,9 +18,9 @@ type (
 		ConfirmPayment(context.Context, dto.MainEventConfirmPaymentRequest) error
 		CheckIn(context.Context, dto.MainEventCheckInRequest) error
 		GetStatus(context.Context) ([]dto.MainEventDetailResponse, error)
-		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error)
-		GetMainEventDetail(context.Context, string) (dto.TicketMainEventResponse, error)
-		GetMainEventCounter(context.Context) (dto.TicketMainEventCounter, error)
+		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.MainEventPaginationResponse, error)
+		GetMainEventDetail(context.Context, string) (dto.MainEventResponse, error)
+		GetMainEventCounter(context.Context) (dto.MainEventCounter, error)
 	}
 
 	mainEventService struct {
@@ -163,7 +163,7 @@ func (s *mainEventService) GetStatus(ctx context.Context) ([]dto.MainEventDetail
 	return result, nil
 }
 
-func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketMainEventPaginationResponse, error) {
+func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.MainEventPaginationResponse, error) {
 	var limit int
 	var page int
 
@@ -179,14 +179,14 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 
 	rsvps, maxPage, count, err := s.ticketRepo.GetAllPagination(req.Search, limit, page)
 	if err != nil {
-		return dto.TicketMainEventPaginationResponse{}, err
+		return dto.MainEventPaginationResponse{}, err
 	}
 
-	var result []dto.TicketMainEventPaginationData
+	var result []dto.MainEventPaginationData
 	for _, rsvp := range rsvps {
 		ticket, _ := s.ticketRepo.GetTicketByUserId(rsvp.ID.String())
 		event, _ := s.ticketRepo.GetEventById(ticket.EventID)
-		result = append(result, dto.TicketMainEventPaginationData{
+		result = append(result, dto.MainEventPaginationData{
 			ID:        ticket.TicketID,
 			Name:      rsvp.Name,
 			Email:     rsvp.Email,
@@ -197,7 +197,7 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 		})
 	}
 
-	return dto.TicketMainEventPaginationResponse{
+	return dto.MainEventPaginationResponse{
 		Data: result,
 		PaginationMetadata: dto.PaginationMetadata{
 			Page:    page,
@@ -208,20 +208,20 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 	}, nil
 }
 
-func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (dto.TicketMainEventResponse, error) {
+func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (dto.MainEventResponse, error) {
 	ticket, err := s.ticketRepo.GetTicketById(id)
 	if err != nil {
-		return dto.TicketMainEventResponse{}, err
+		return dto.MainEventResponse{}, err
 	}
 	event, err := s.ticketRepo.GetEventById(ticket.EventID)
 	if err != nil {
-		return dto.TicketMainEventResponse{}, err
+		return dto.MainEventResponse{}, err
 	}
 	user, err := s.ticketRepo.GetUserById(ticket.UserID)
 	if err != nil {
-		return dto.TicketMainEventResponse{}, err
+		return dto.MainEventResponse{}, err
 	}
-	return dto.TicketMainEventResponse{
+	return dto.MainEventResponse{
 		ID:        ticket.TicketID,
 		Name:      user.Name,
 		Email:     user.Email,
@@ -238,23 +238,23 @@ func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (d
 	}, nil
 }
 
-func (s *mainEventService) GetMainEventCounter(ctx context.Context) (dto.TicketMainEventCounter, error) {
+func (s *mainEventService) GetMainEventCounter(ctx context.Context) (dto.MainEventCounter, error) {
 	total, err := s.ticketRepo.CountTotal()
 	if err != nil {
-		return dto.TicketMainEventCounter{}, err
+		return dto.MainEventCounter{}, err
 	}
 
 	confirmed_payments, err := s.ticketRepo.CountConfirmedPayments()
 	if err != nil {
-		return dto.TicketMainEventCounter{}, err
+		return dto.MainEventCounter{}, err
 	}
 
 	checked_ins, err := s.ticketRepo.CountCheckedIns()
 	if err != nil {
-		return dto.TicketMainEventCounter{}, err
+		return dto.MainEventCounter{}, err
 	}
 
-	return dto.TicketMainEventCounter{
+	return dto.MainEventCounter{
 		Total:             total,
 		ConfirmedPayments: confirmed_payments,
 		CheckedIns:        checked_ins,
