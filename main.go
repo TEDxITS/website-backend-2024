@@ -44,11 +44,6 @@ func main() {
 		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
 		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
 
-		// websocket hub
-		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
-		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
-		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
-
 		// controllers
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
 		linkShortenerController controller.LinkShortenerController = controller.NewLinkShortenerController(linkShortenerService)
