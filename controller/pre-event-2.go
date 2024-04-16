@@ -23,25 +23,25 @@ type (
 	}
 
 	preEvent2Controller struct {
-		ticketService service.PreEvent2Service
+		preevent2Service service.PreEvent2Service
 	}
 )
 
-func NewTicketController(service service.PreEvent2Service) PreEvent2Controller {
+func NewPreEvent2Controller(service service.PreEvent2Service) PreEvent2Controller {
 	return &preEvent2Controller{
-		ticketService: service,
+		preevent2Service: service,
 	}
 }
 
 func (c *preEvent2Controller) CreatePE2RSVP(ctx *gin.Context) {
-	var req dto.TicketPE2RSVPRequest
+	var req dto.PE2RSVPRequest
 	if err := ctx.ShouldBind(&req); err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	result, err := c.ticketService.CreatePE2RSVP(ctx.Request.Context(), req)
+	result, err := c.preevent2Service.CreatePE2RSVP(ctx.Request.Context(), req)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_CREATE_TICKET, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
@@ -60,7 +60,7 @@ func (c *preEvent2Controller) GetPE2RSVPPaginated(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.ticketService.GetPE2RSVPPaginated(ctx.Request.Context(), req)
+	result, err := c.preevent2Service.GetPE2RSVPPaginated(ctx.Request.Context(), req)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
@@ -79,7 +79,7 @@ func (c *preEvent2Controller) GetPE2RSVPPaginated(ctx *gin.Context) {
 func (c *preEvent2Controller) GetPE2RSVPDetail(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	result, err := c.ticketService.GetPE2RSVPDetail(ctx.Request.Context(), id)
+	result, err := c.preevent2Service.GetPE2RSVPDetail(ctx.Request.Context(), id)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
@@ -91,7 +91,7 @@ func (c *preEvent2Controller) GetPE2RSVPDetail(ctx *gin.Context) {
 }
 
 func (c *preEvent2Controller) GetPE2RSVPCounter(ctx *gin.Context) {
-	result, err := c.ticketService.GetPE2RSVPCounter(ctx.Request.Context())
+	result, err := c.preevent2Service.GetPE2RSVPCounter(ctx.Request.Context())
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
@@ -103,7 +103,7 @@ func (c *preEvent2Controller) GetPE2RSVPCounter(ctx *gin.Context) {
 }
 
 func (c *preEvent2Controller) GetPE2RSVPStatus(ctx *gin.Context) {
-	result, err := c.ticketService.GetPE2RSVPStatus(ctx.Request.Context())
+	result, err := c.preevent2Service.GetPE2RSVPStatus(ctx.Request.Context())
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
