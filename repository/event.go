@@ -11,6 +11,7 @@ type (
 		GetAll() ([]entity.Event, error)
 		GetByID(string) (entity.Event, error)
 		GetPE2Detail() (entity.Event, error)
+		GetAllExcept(eventID string) ([]entity.Event, error)
 	}
 
 	eventRepository struct {
@@ -46,4 +47,12 @@ func (r *eventRepository) GetPE2Detail() (entity.Event, error) {
 		return entity.Event{}, err
 	}
 	return event, nil
+}
+
+func (r *eventRepository) GetAllExcept(eventID string) ([]entity.Event, error) {
+	var events []entity.Event
+	if err := r.db.Where("id != ?", eventID).Find(&events).Error; err != nil {
+		return nil, err
+	}
+	return events, nil
 }
