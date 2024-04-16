@@ -25,7 +25,7 @@ type (
 	}
 )
 
-func NewTicketService(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository) PreEvent2Service {
+func NewPreEvent2Service(eventRepo repository.EventRepository, pe2RSVPRepo repository.PE2RSVPRepository) PreEvent2Service {
 	return &preEvent2Service{
 		eventRepo:   eventRepo,
 		pe2RSVPRepo: pe2RSVPRepo,

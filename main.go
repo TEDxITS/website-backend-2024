@@ -35,7 +35,7 @@ func main() {
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
-		preEvent2Service     service.PreEvent2Service     = service.NewTicketService(eventRepository, pe2RSVPRepo)
+		preEvent2Service     service.PreEvent2Service     = service.NewPreEvent2Service(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
 		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository)
 
