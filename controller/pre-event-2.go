@@ -28,7 +28,7 @@ func NewPreEvent2Controller(service service.PreEvent2Service) PreEvent2Controlle
 	return &preEvent2Controller{
 		preevent2Service: service,
 	}
-}
+)
 
 func (c *preEvent2Controller) CreatePE2RSVP(ctx *gin.Context) {
 	var req dto.PE2RSVPRequest
