@@ -14,6 +14,9 @@ type (
 		ConfirmPayment(ctx *gin.Context)
 		CheckIn(ctx *gin.Context)
 		GetStatus(ctx *gin.Context)
+		GetMainEventPaginated(ctx *gin.Context)
+		GetMainEventDetail(ctx *gin.Context)
+		GetMainEventCounter(ctx *gin.Context)
 	}
 
 	mainEventController struct {
@@ -74,5 +77,55 @@ func (c *mainEventController) GetStatus(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_EVENT, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *mainEventController) GetMainEventPaginated(ctx *gin.Context) {
+	var req dto.PaginationQuery
+	if err := ctx.ShouldBind(&req); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	result, err := c.mainEventService.GetMainEventPaginated(ctx.Request.Context(), req)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.Response{
+		Status:  true,
+		Message: dto.MESSAGE_SUCCESS_GET_TICKET,
+		Data:    result.Data,
+		Meta:    result.PaginationMetadata,
+	}
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *mainEventController) GetMainEventDetail(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	result, err := c.mainEventService.GetMainEventDetail(ctx.Request.Context(), id)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_TICKET, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *mainEventController) GetMainEventCounter(ctx *gin.Context) {
+	result, err := c.mainEventService.GetMainEventCounter(ctx.Request.Context())
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_TICKET, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_TICKET, result)
 	ctx.JSON(http.StatusOK, res)
 }

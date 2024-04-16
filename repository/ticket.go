@@ -168,6 +168,8 @@ func (r *ticketRepository) FindAll() ([]entity.Ticket, error) {
 	}
 
 	return tickets, nil
+}
+
 func (r *ticketRepository) GetAllPagination(search string, limit, page int) ([]entity.User, int64, int64, error) {
 	var rsvps []entity.User
 	var count int64
