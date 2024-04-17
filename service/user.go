@@ -335,8 +335,25 @@ func (s *userService) GetAllPagination(ctx context.Context, req dto.PaginationQu
 	}, nil
 }
 
-func (s *userService) ResetPassword(ctx context.Context, userId string, req dto.UserResetPasswordRequest) error {
-	user, err := s.userRepo.GetUserById(userId)
+func (s *userService) ResetPassword(ctx context.Context, token string, req dto.UserResetPasswordRequest) error {
+	decrypted, err := utils.AESDecrypt(token)
+	if err != nil {
+		return dto.ErrDecryptToken
+	}
+
+	split := strings.Split(decrypted, "||")
+	if len(split) != 2 {
+		return dto.ErrInvalidToken
+	}
+
+	email := split[0]
+	expired := split[1]
+	expiredTime, _ := time.Parse("2006-01-02 15:04:05", expired)
+	if time.Now().After(expiredTime) {
+		return dto.ErrTokenExpired
+	}
+
+	user, err := s.userRepo.GetUserByEmail(email)
 	if err != nil {
 		return dto.ErrUserNotFound
 	}
