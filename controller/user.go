@@ -21,6 +21,7 @@ type (
 		Verify(ctx *gin.Context)
 		ResendVerifyEmail(ctx *gin.Context)
 		ResetPassword(ctx *gin.Context)
+		SendResetPasswordEmail(ctx *gin.Context)
 	}
 
 	userController struct {
@@ -206,5 +207,24 @@ func (c *userController) ResetPassword(ctx *gin.Context) {
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_RESET_PASSWORD, nil)
 	ctx.JSON(http.StatusOK, res)
+}
 
+func (c *userController) SendResetPasswordEmail(ctx *gin.Context) {
+	var email dto.UserSendResetPassworRequest
+
+	if err := ctx.ShouldBind(&email); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	err := c.userService.SendResetPasswordEmail(ctx.Request.Context(), email.Email)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_SEND_RESET_PASSWORD_EMAIL, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_SEND_RESET_PASSWORD_EMAIL, nil)
+	ctx.JSON(http.StatusOK, res)
 }

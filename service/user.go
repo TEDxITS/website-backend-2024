@@ -26,6 +26,8 @@ type (
 		generateVerificationEmail(userEmail string) (utils.Email, error)
 		SendVerifyEmail(ctx context.Context, email string) error
 		VerifyEmail(ctx context.Context, token string) error
+		generateResetPasswordEmail(userEmail string) (utils.Email, error)
+		SendResetPasswordEmail(ctx context.Context, email string) error
 		ResetPassword(ctx context.Context, token string, req dto.UserResetPasswordRequest) error
 	}
 
@@ -99,6 +101,25 @@ func (s *userService) SendVerifyEmail(ctx context.Context, email string) error {
 	return nil
 }
 
+func (s *userService) SendResetPasswordEmail(ctx context.Context, email string) error {
+	_, err := s.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	emailData, err := s.generateResetPasswordEmail(email)
+	if err != nil {
+		return dto.ErrGenerateResetPasswordEmail
+	}
+
+	err = utils.SendMail(emailData)
+	if err != nil {
+		return dto.ErrSendEmail
+	}
+
+	return nil
+}
+
 func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dto.UserResponse, error) {
 	email, _ := s.userRepo.CheckEmailExist(req.Email)
 	if email {
@@ -131,6 +152,45 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dt
 		Role:       userReg.RoleID,
 		Email:      userReg.Email,
 		IsVerified: userReg.Verified,
+	}, nil
+}
+
+func (s *userService) generateResetPasswordEmail(userEmail string) (utils.Email, error) {
+	expired := time.Now().Add(24 * time.Hour).Format("2006-01-02 15:04:05")
+	token, err := utils.AESEncrypt(userEmail + "||" + expired)
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	resetPasswordLink := constants.BASE_URL + "/api/user/reset-password?token=" + token
+	readHtml, err := os.ReadFile("./utils/template/base_mail.html")
+
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	data := struct {
+		Email  string
+		Verify string
+	}{
+		Email:  userEmail,
+		Verify: resetPasswordLink,
+	}
+
+	tmpl, err := template.New("custom").Parse(string(readHtml))
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	var strMail bytes.Buffer
+	if err := tmpl.Execute(&strMail, data); err != nil {
+		return utils.Email{}, err
+	}
+
+	return utils.Email{
+		Email:   userEmail,
+		Subject: "Reset Account Password - TEDxITS",
+		Body:    strMail.String(),
 	}, nil
 }
 
