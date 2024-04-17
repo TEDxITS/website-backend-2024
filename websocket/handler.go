@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -175,7 +176,10 @@ func (Handle *ticketQueue) WaitQueueTurn(client *Client) error {
 	}
 
 	queueNumber := Handle.Hub.GetWaitingLength()
-	if err := client.SendTextMessage(fmt.Sprintf(dto.WSOCKET_QUEUE_NUMBER, queueNumber)); nil != err {
+	message, _ := json.Marshal(dto.S2CQueueLineInfo{
+		QueueNumber: queueNumber,
+	})
+	if err := client.SendTextMessage(string(message)); nil != err {
 		return err
 	}
 
@@ -187,7 +191,11 @@ func (Handle *ticketQueue) WaitQueueTurn(client *Client) error {
 			}
 
 			queueNumber--
-			if err := client.SendTextMessage(fmt.Sprintf(dto.WSOCKET_QUEUE_NUMBER, queueNumber)); nil != err {
+			message, _ := json.Marshal(dto.S2CQueueLineInfo{
+				QueueNumber: queueNumber,
+			})
+
+			if err := client.SendTextMessage(string(message)); nil != err {
 				return err
 			}
 		case notif := <-client.Notification:

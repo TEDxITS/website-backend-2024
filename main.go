@@ -70,6 +70,8 @@ func main() {
 	routes.MainEvent(server, mainEventController, jwtService)
 	routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
 
+	// https://github.com/gin-contrib/cors
+	// https://stackoverflow.com/questions/76196547/websocket-returning-403-every-time
 	config := cors.DefaultConfig()
 	config.AllowOrigins = constants.CORS_ALLOWED_ORIGIN
 	config.AllowCredentials = true
