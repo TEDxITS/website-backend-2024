@@ -21,3 +21,7 @@ const (
 	JWT_EXPIRE_TIME_IN_MINUTES = 120
 	WSOCKET_TIME_LIMIT         = time.Minute * time.Duration(3)
 )
+
+var (
+	CORS_ALLOWED_ORIGIN = []string{"http://localhost:3000", "https://tedxits.com", "http://tedxits.com", "https://www.tedxits.com", "http://www.tedxits.com"}
+)

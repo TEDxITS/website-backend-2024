@@ -14,6 +14,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/TEDxITS/website-backend-2024/utils/azure"
 	"github.com/TEDxITS/website-backend-2024/websocket"
+	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -68,6 +69,11 @@ func main() {
 	routes.PreEvent2(server, preEvent2Controller, jwtService)
 	routes.MainEvent(server, mainEventController, jwtService)
 	routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = constants.CORS_ALLOWED_ORIGIN
+	config.AllowCredentials = true
+	server.Use(cors.New(config))
 
 	// database seeding, update existing data or create if not found
 	if err := seeder.RunSeeders(db); err != nil {

@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -15,6 +16,9 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 type (
@@ -109,6 +113,7 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 	incoming := make(chan []byte)
 	go func() {
 		for {
+			// otherwise, mutex block, thread hang
 			_, message, err := client.Conn.ReadMessage()
 			if nil != err {
 				client.Done(err)
@@ -150,9 +155,7 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 			}
 		case err := <-client.Quit:
 			if err == nil {
-				if err := client.SendTextMessage(dto.WSOCKET_TRANSACTION_SUCCESS); err != nil {
-					return
-				}
+				client.SendTextMessage(dto.WSOCKET_TRANSACTION_SUCCESS)
 			}
 
 			return
