@@ -193,7 +193,7 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 			return dto.MainEventPaginationResponse{}, err
 		}
 
-		event, err := s.ticketRepo.GetEventById(ticket.EventID)
+		event, err := s.eventRepo.GetByID(ticket.EventID)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				continue
@@ -226,15 +226,15 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (dto.MainEventResponse, error) {
 	ticket, err := s.ticketRepo.GetTicketById(id)
 	if err != nil {
-		return dto.MainEventResponse{}, err
+		return dto.MainEventResponse{}, dto.ErrTicketNotFound
 	}
-	event, err := s.ticketRepo.GetEventById(ticket.EventID)
+	event, err := s.eventRepo.GetByID(ticket.EventID)
 	if err != nil {
-		return dto.MainEventResponse{}, err
+		return dto.MainEventResponse{}, dto.ErrEventNotFound
 	}
-	user, err := s.ticketRepo.GetUserById(ticket.UserID)
+	user, err := s.userRepo.GetUserById(ticket.UserID)
 	if err != nil {
-		return dto.MainEventResponse{}, err
+		return dto.MainEventResponse{}, dto.ErrUserNotFound
 	}
 	return dto.MainEventResponse{
 		ID:        ticket.TicketID,
@@ -250,6 +250,7 @@ func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (d
 		Seat:      ticket.Seat,
 		Payment:   ticket.Payment,
 		WithKit:   *event.WithKit,
+		CreatedAt: ticket.CreatedAt,
 	}, nil
 }
 

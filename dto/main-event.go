@@ -53,6 +53,7 @@ type (
 		Seat      string    `json:"seat" form:"seat"`
 		Payment   string    `json:"payment" form:"payment"`
 		WithKit   bool      `json:"with_kit" form:"with_kit"`
+		CreatedAt time.Time `json:"created_at" form:"created_at"`
 	}
 
 	MainEventCounter struct {
