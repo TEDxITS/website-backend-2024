@@ -26,4 +26,5 @@ const (
 	MainEventEarlyBirdWithMerchID = "ff0972d2-250d-49e9-977f-dd11cbfdca8d"
 	MainEventPreSaleWithMerchID   = "edef91cb-f43f-4a30-a5f0-43acd0d6853f"
 	MainEventNormalWithMerchID    = "0594226b-c314-42e7-9743-c76fdd6b7099"
+	PreEvent2ID                   = "7de24efe-0aec-469a-bf0c-8fa8cae3ff3f"
 )

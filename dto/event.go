@@ -14,6 +14,7 @@ const (
 
 var (
 	ErrFailedToFetch = errors.New("failed to fetch event")
+	ErrEventNotFound = errors.New("event not found")
 )
 
 type (

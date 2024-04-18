@@ -111,7 +111,7 @@ func (s *mainEventService) CheckIn(ctx context.Context, req dto.MainEventCheckIn
 }
 
 func (s *mainEventService) GetStatus(ctx context.Context) ([]dto.MainEventDetailResponse, error) {
-	events, err := s.eventRepo.GetAllExcept("7de24efe-0aec-469a-bf0c-8fa8cae3ff3f")
+	events, err := s.eventRepo.GetAllExcept(constants.PreEvent2ID)
 	if err != nil {
 		return []dto.MainEventDetailResponse{}, err
 	}
@@ -177,23 +177,21 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 		page = constants.ENUM_PAGINATION_PAGE
 	}
 
-	rsvps, maxPage, count, err := s.ticketRepo.GetAllPagination(req.Search, limit, page)
+	tickets, maxPage, count, err := s.ticketRepo.JoinGetAllPagination(req.Search, limit, page)
 	if err != nil {
 		return dto.MainEventPaginationResponse{}, err
 	}
 
 	var result []dto.MainEventPaginationData
-	for _, rsvp := range rsvps {
-		ticket, _ := s.ticketRepo.GetTicketByUserId(rsvp.ID.String())
-		event, _ := s.ticketRepo.GetEventById(ticket.EventID)
+	for _, t := range tickets {
 		result = append(result, dto.MainEventPaginationData{
-			ID:        ticket.TicketID,
-			Name:      rsvp.Name,
-			Email:     rsvp.Email,
-			Confirmed: *ticket.PaymentConfirmed,
-			CheckedIn: *ticket.CheckedIn,
-			EventName: event.Name,
-			Price:     event.Price,
+			ID:        t.TicketID,
+			Name:      t.User.Name,
+			Email:     t.User.Email,
+			Confirmed: *t.PaymentConfirmed,
+			CheckedIn: *t.CheckedIn,
+			EventName: t.Event.Name,
+			Price:     t.Event.Price,
 		})
 	}
 
@@ -211,16 +209,19 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (dto.MainEventResponse, error) {
 	ticket, err := s.ticketRepo.GetTicketById(id)
 	if err != nil {
-		return dto.MainEventResponse{}, err
+		return dto.MainEventResponse{}, dto.ErrTicketNotFound
 	}
-	event, err := s.ticketRepo.GetEventById(ticket.EventID)
+
+	event, err := s.eventRepo.GetByID(ticket.EventID)
 	if err != nil {
-		return dto.MainEventResponse{}, err
+		return dto.MainEventResponse{}, dto.ErrEventNotFound
 	}
-	user, err := s.ticketRepo.GetUserById(ticket.UserID)
+
+	user, err := s.userRepo.GetUserById(ticket.UserID)
 	if err != nil {
-		return dto.MainEventResponse{}, err
+		return dto.MainEventResponse{}, dto.ErrUserNotFound
 	}
+
 	return dto.MainEventResponse{
 		ID:        ticket.TicketID,
 		Name:      user.Name,
@@ -230,11 +231,12 @@ func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (d
 		EventName: event.Name,
 		Price:     event.Price,
 
-		Handphone: ticket.Handphone,
-		Birthdate: ticket.Birthdate,
-		Seat:      ticket.Seat,
-		Payment:   ticket.Payment,
-		WithKit:   *event.WithKit,
+		Handphone:    ticket.Handphone,
+		Birthdate:    ticket.Birthdate,
+		Seat:         ticket.Seat,
+		Payment:      ticket.Payment,
+		WithKit:      *event.WithKit,
+		RegisterDate: ticket.CreatedAt,
 	}, nil
 }
 
