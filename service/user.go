@@ -14,6 +14,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/helpers"
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/utils"
+	"gorm.io/gorm"
 )
 
 type (
@@ -26,16 +27,21 @@ type (
 		generateVerificationEmail(userEmail string) (utils.Email, error)
 		SendVerifyEmail(ctx context.Context, email string) error
 		VerifyEmail(ctx context.Context, token string) error
+		generateResetPasswordEmail(userEmail string) (utils.Email, error)
+		SendResetPasswordEmail(ctx context.Context, email string) error
+		ResetPassword(ctx context.Context, token string, req dto.UserResetPasswordRequest) error
 	}
 
 	userService struct {
 		userRepo repository.UserRepository
+		roleRepo repository.RoleRepository
 	}
 )
 
-func NewUserService(ur repository.UserRepository) UserService {
+func NewUserService(ur repository.UserRepository, rr repository.RoleRepository) UserService {
 	return &userService{
 		userRepo: ur,
+		roleRepo: rr,
 	}
 }
 
@@ -98,6 +104,34 @@ func (s *userService) SendVerifyEmail(ctx context.Context, email string) error {
 	return nil
 }
 
+func (s *userService) SendResetPasswordEmail(ctx context.Context, email string) error {
+	user, err := s.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	role, err := s.roleRepo.GetRolebyId(user.RoleID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+
+	if role.Name != constants.ENUM_ROLE_USER {
+		return dto.ErrAdminNotAllowedResetPassword
+	}
+
+	emailData, err := s.generateResetPasswordEmail(email)
+	if err != nil {
+		return dto.ErrGenerateResetPasswordEmail
+	}
+
+	err = utils.SendMail(emailData)
+	if err != nil {
+		return dto.ErrSendEmail
+	}
+
+	return nil
+}
+
 func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dto.UserResponse, error) {
 	email, _ := s.userRepo.CheckEmailExist(req.Email)
 	if email {
@@ -130,6 +164,45 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserRequest) (dt
 		Role:       userReg.RoleID,
 		Email:      userReg.Email,
 		IsVerified: userReg.Verified,
+	}, nil
+}
+
+func (s *userService) generateResetPasswordEmail(userEmail string) (utils.Email, error) {
+	expired := time.Now().Add(24 * time.Hour).Format("2006-01-02 15:04:05")
+	token, err := utils.AESEncrypt(userEmail + "||" + expired)
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	resetPasswordLink := constants.BASE_URL + "/api/user/reset-password?token=" + token
+	readHtml, err := os.ReadFile("./utils/template/base_mail.html")
+
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	data := struct {
+		Email  string
+		Verify string
+	}{
+		Email:  userEmail,
+		Verify: resetPasswordLink,
+	}
+
+	tmpl, err := template.New("custom").Parse(string(readHtml))
+	if err != nil {
+		return utils.Email{}, err
+	}
+
+	var strMail bytes.Buffer
+	if err := tmpl.Execute(&strMail, data); err != nil {
+		return utils.Email{}, err
+	}
+
+	return utils.Email{
+		Email:   userEmail,
+		Subject: "Reset Account Password - TEDxITS",
+		Body:    strMail.String(),
 	}, nil
 }
 
@@ -272,4 +345,50 @@ func (s *userService) GetAllPagination(ctx context.Context, req dto.PaginationQu
 			Count:   count,
 		},
 	}, nil
+}
+
+func (s *userService) ResetPassword(ctx context.Context, token string, req dto.UserResetPasswordRequest) error {
+	decrypted, err := utils.AESDecrypt(token)
+	if err != nil {
+		return dto.ErrDecryptToken
+	}
+
+	split := strings.Split(decrypted, "||")
+	if len(split) != 2 {
+		return dto.ErrInvalidToken
+	}
+
+	email := split[0]
+	expired := split[1]
+	expiredTime, _ := time.Parse("2006-01-02 15:04:05", expired)
+	if time.Now().After(expiredTime) {
+		return dto.ErrTokenExpired
+	}
+
+	user, err := s.userRepo.GetUserByEmail(email)
+	if err != nil {
+		return dto.ErrUserNotFound
+	}
+
+	role, err := s.roleRepo.GetRolebyId(user.RoleID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+
+	if role.Name != constants.ENUM_ROLE_USER {
+		return dto.ErrAdminNotAllowedResetPassword
+	}
+
+	hashedPassword, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		return dto.ErrHashPassword
+	}
+
+	user.Password = hashedPassword
+	_, err = s.userRepo.UpdateUser(user)
+	if err != nil {
+		return dto.ErrUpdateUser
+	}
+
+	return nil
 }
