@@ -14,6 +14,7 @@ const (
 
 var (
 	ErrFailedToFetch = errors.New("failed to fetch event")
+	ErrEventNotFound = errors.New("event not found")
 )
 
 type (
@@ -27,4 +28,8 @@ type (
 		StartDate   time.Time `json:"start_date"`
 		EndDate     time.Time `json:"end_date"`
 	}
+
+	// EventsDetailResponse struct {
+	// 	Events []EventDetailResponse `json:"events"`
+	// }
 )

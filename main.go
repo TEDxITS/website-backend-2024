@@ -14,6 +14,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/TEDxITS/website-backend-2024/utils/azure"
 	"github.com/TEDxITS/website-backend-2024/websocket"
+	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -31,13 +32,14 @@ func main() {
 		eventRepository         repository.EventRepository         = repository.NewEventRepository(db)
 		pe2RSVPRepo             repository.PE2RSVPRepository       = repository.NewPE2RSVPRepository(db)
 		roleRepo                repository.RoleRepository          = repository.NewRoleRepository(db)
-		// ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
+		ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
 
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository, roleRepo)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
-		ticketService        service.PreEvent2Service     = service.NewTicketService(eventRepository, pe2RSVPRepo)
+		preEvent2Service     service.PreEvent2Service     = service.NewPreEvent2Service(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
+		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository)
 
 		// websocket hub
 		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
@@ -48,7 +50,8 @@ func main() {
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
 		linkShortenerController controller.LinkShortenerController = controller.NewLinkShortenerController(linkShortenerService)
 		eventController         controller.EventController         = controller.NewEventController(eventService)
-		ticketController        controller.PreEvent2Controller     = controller.NewTicketController(ticketService)
+		preEvent2Controller     controller.PreEvent2Controller     = controller.NewPreEvent2Controller(preEvent2Service)
+		mainEventController     controller.MainEventController     = controller.NewMainEventController(mainEventService)
 
 		// websocket handler
 		earlyBirdQueue websocket.TicketQueue = websocket.NewTicketQueue(earlyBirdHub, jwtService)
@@ -64,9 +67,16 @@ func main() {
 	routes.User(server, userController, jwtService)
 	routes.LinkShortener(server, linkShortenerController, jwtService)
 	routes.Event(server, eventController, jwtService)
-	routes.PreEvent2(server, ticketController, jwtService)
-	routes.MainEvent(server, jwtService)
+	routes.PreEvent2(server, preEvent2Controller, jwtService)
+	routes.MainEvent(server, mainEventController, jwtService)
 	routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
+
+	// https://github.com/gin-contrib/cors
+	// https://stackoverflow.com/questions/76196547/websocket-returning-403-every-time
+	config := cors.DefaultConfig()
+	config.AllowOrigins = constants.CORS_ALLOWED_ORIGIN
+	config.AllowCredentials = true
+	server.Use(cors.New(config))
 
 	// database seeding, update existing data or create if not found
 	if err := seeder.RunSeeders(db); err != nil {

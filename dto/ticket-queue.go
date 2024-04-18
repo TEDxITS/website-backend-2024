@@ -7,9 +7,7 @@ const (
 	WSOCKET_ENUM_NO_MERCH_REQUEST   = "MERCH 0"
 	WSOCKET_ENUM_WITH_MERCH_REQUEST = "MERCH 1"
 
-	WSOCKET_PAYMENT_CODE        = "PAYMENT CODE %v"
-	WSOCKET_QUEUE_NUMBER        = "WAITING QUEUE %v"
-	WSOCKET_TICKET_AVAILABILITY = "M=%v | N=%v"
+	WSOCKET_PAYMENT_CODE = "PAYMENT CODE %v"
 
 	WSOCKET_AUTH_SUCCESS        = "authentication successful"
 	WSOCKET_TRANSACTION_START   = "proceed transaction"
@@ -23,4 +21,16 @@ var (
 	ErrWSInvalidCommand    = errors.New("invalid command")
 	ErrWSMainEventFull     = errors.New("main event is full")
 	ErrWSCommunicateWithDB = errors.New("error fetching data")
+)
+
+type (
+	// S2C = Server to Client
+	S2CQueueLineInfo struct {
+		QueueNumber int `json:"queue_number"`
+	}
+
+	S2CMerchStockInfo struct {
+		WithMerch int `json:"with_merch"`
+		NoMerch   int `json:"no_merch"`
+	}
 )

@@ -24,7 +24,7 @@ func EventSeeder(db *gorm.DB) error {
 	var eventList []entity.Event
 	eventList = append(eventList,
 		entity.Event{
-			ID:        uuid.MustParse("7de24efe-0aec-469a-bf0c-8fa8cae3ff3f"),
+			ID:        uuid.MustParse(constants.PreEvent2ID),
 			Name:      constants.PE2Name,
 			Price:     0,
 			WithKit:   &False,
@@ -32,7 +32,7 @@ func EventSeeder(db *gorm.DB) error {
 			Registers: 0,
 			EventDate: time.Date(2024, time.April, 24, 12, 0, 0, 0, time.UTC),
 			StartDate: time.Date(2024, time.April, 10, 19, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.April, 19, 19, 0, 0, 0, time.UTC),
+			EndDate:   time.Date(2024, time.April, 18, 00, 0, 0, 0, time.UTC),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventEarlyBirdNoMerchID),
 			Name:      constants.MainEventEarlyBirdNoMerch,

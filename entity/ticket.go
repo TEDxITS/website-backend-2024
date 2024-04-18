@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type Ticket struct {
-	TicketID string `json:"ticket_id" gorm:"primary_key" form:"ticket_id"`
+	TicketID string `json:"ticket_id" form:"ticket_id" gorm:"primaryKey" `
 	UserID   string `json:"user_id" form:"user_id"`
 	EventID  string `json:"event_id" form:"event_id"`
 
@@ -15,8 +15,8 @@ type Ticket struct {
 	PaymentConfirmed *bool `json:"payment_confirmed" form:"payment_confirmed"`
 	CheckedIn        *bool `json:"checked_in" form:"checked_in"`
 
-	User  User  `gorm:"foreignKey:UserID"`
-	Event Event `gorm:"foreignKey:EventID"`
+	User  *User  `gorm:"foreignKey:UserID"`
+	Event *Event `gorm:"foreignKey:EventID"`
 
 	Timestamp
 }

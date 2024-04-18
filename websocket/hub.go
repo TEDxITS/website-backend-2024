@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"fmt"
+	"encoding/json"
 	"sync"
 
 	"github.com/TEDxITS/website-backend-2024/dto"
@@ -205,7 +205,10 @@ func (Hub *queueHub) BroadcastStock() {
 	noMerch, err1 := Hub.repository.GetByID(Hub.NoMerchID)
 	withMerch, err2 := Hub.repository.GetByID(Hub.WithMerchID)
 	if err1 != nil || err2 != nil {
-		goto errdb
+		for _, client := range Hub.Transaction {
+			client.Notify(dto.ErrWSCommunicateWithDB.Error())
+		}
+		return
 	}
 
 	for _, client := range Hub.Transaction {
@@ -216,18 +219,13 @@ func (Hub *queueHub) BroadcastStock() {
 		}
 	}
 
-	for _, client := range Hub.Transaction {
-		client.Notify(
-			fmt.Sprintf(dto.WSOCKET_TICKET_AVAILABILITY,
-				(withMerch.Capacity - withMerch.Registers),
-				(noMerch.Capacity - noMerch.Registers)),
-		)
-	}
-	return
+	message, _ := json.Marshal(dto.S2CMerchStockInfo{
+		WithMerch: withMerch.Capacity - withMerch.Registers,
+		NoMerch:   noMerch.Capacity - noMerch.Registers,
+	})
 
-errdb:
 	for _, client := range Hub.Transaction {
-		client.Notify(dto.ErrWSCommunicateWithDB.Error())
+		client.Notify(string(message))
 	}
 }
 

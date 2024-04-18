@@ -1,7 +1,9 @@
 package websocket
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -15,6 +17,9 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 type (
@@ -109,6 +114,7 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 	incoming := make(chan []byte)
 	go func() {
 		for {
+			// otherwise, mutex block, thread hang
 			_, message, err := client.Conn.ReadMessage()
 			if nil != err {
 				client.Done(err)
@@ -150,9 +156,7 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 			}
 		case err := <-client.Quit:
 			if err == nil {
-				if err := client.SendTextMessage(dto.WSOCKET_TRANSACTION_SUCCESS); err != nil {
-					return
-				}
+				client.SendTextMessage(dto.WSOCKET_TRANSACTION_SUCCESS)
 			}
 
 			return
@@ -172,7 +176,10 @@ func (Handle *ticketQueue) WaitQueueTurn(client *Client) error {
 	}
 
 	queueNumber := Handle.Hub.GetWaitingLength()
-	if err := client.SendTextMessage(fmt.Sprintf(dto.WSOCKET_QUEUE_NUMBER, queueNumber)); nil != err {
+	message, _ := json.Marshal(dto.S2CQueueLineInfo{
+		QueueNumber: queueNumber,
+	})
+	if err := client.SendTextMessage(string(message)); nil != err {
 		return err
 	}
 
@@ -184,7 +191,11 @@ func (Handle *ticketQueue) WaitQueueTurn(client *Client) error {
 			}
 
 			queueNumber--
-			if err := client.SendTextMessage(fmt.Sprintf(dto.WSOCKET_QUEUE_NUMBER, queueNumber)); nil != err {
+			message, _ := json.Marshal(dto.S2CQueueLineInfo{
+				QueueNumber: queueNumber,
+			})
+
+			if err := client.SendTextMessage(string(message)); nil != err {
 				return err
 			}
 		case notif := <-client.Notification:
