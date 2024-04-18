@@ -46,7 +46,7 @@ func (r *ticketRepository) CreateTicket(ticket entity.Ticket) (entity.Ticket, er
 }
 
 func (r *ticketRepository) GetAllPagination(search string, limit, page int) ([]entity.User, int64, int64, error) {
-	var rsvps []entity.User
+	var users []entity.User
 	var count int64
 
 	if search != "" {
@@ -68,12 +68,12 @@ func (r *ticketRepository) GetAllPagination(search string, limit, page int) ([]e
 
 	err := r.db.Model(&entity.User{}).
 		Where("name LIKE ?", "%"+search+"%").
-		Offset(offset).Limit(limit).Find(&rsvps).Error
+		Offset(offset).Limit(limit).Find(&users).Error
 	if err != nil {
 		return nil, 0, 0, err
 	}
 
-	return rsvps, maxPage, count, nil
+	return users, maxPage, count, nil
 }
 
 func (r *ticketRepository) GetTicketByUserId(userId string) (entity.Ticket, error) {

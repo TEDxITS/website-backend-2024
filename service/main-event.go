@@ -11,6 +11,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/utils"
+	"gorm.io/gorm"
 )
 
 type (
@@ -177,19 +178,33 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 		page = constants.ENUM_PAGINATION_PAGE
 	}
 
-	rsvps, maxPage, count, err := s.ticketRepo.GetAllPagination(req.Search, limit, page)
+	users, maxPage, count, err := s.ticketRepo.GetAllPagination(req.Search, limit, page)
 	if err != nil {
 		return dto.MainEventPaginationResponse{}, err
 	}
 
 	var result []dto.MainEventPaginationData
-	for _, rsvp := range rsvps {
-		ticket, _ := s.ticketRepo.GetTicketByUserId(rsvp.ID.String())
-		event, _ := s.ticketRepo.GetEventById(ticket.EventID)
+	for _, user := range users {
+		ticket, err := s.ticketRepo.GetTicketByUserId(user.ID.String())
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				continue
+			}
+			return dto.MainEventPaginationResponse{}, err
+		}
+
+		event, err := s.ticketRepo.GetEventById(ticket.EventID)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				continue
+			}
+			return dto.MainEventPaginationResponse{}, err
+		}
+
 		result = append(result, dto.MainEventPaginationData{
 			ID:        ticket.TicketID,
-			Name:      rsvp.Name,
-			Email:     rsvp.Email,
+			Name:      user.Name,
+			Email:     user.Email,
 			Confirmed: *ticket.PaymentConfirmed,
 			CheckedIn: *ticket.CheckedIn,
 			EventName: event.Name,
