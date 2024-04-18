@@ -30,10 +30,11 @@ func main() {
 		linkShortenerRepository repository.LinkShortenerRepository = repository.NewLinkShortenerRepository(db)
 		eventRepository         repository.EventRepository         = repository.NewEventRepository(db)
 		pe2RSVPRepo             repository.PE2RSVPRepository       = repository.NewPE2RSVPRepository(db)
+		roleRepo                repository.RoleRepository          = repository.NewRoleRepository(db)
 		// ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
 
 		// services
-		userService          service.UserService          = service.NewUserService(userRepository)
+		userService          service.UserService          = service.NewUserService(userRepository, roleRepo)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
 		ticketService        service.PreEvent2Service     = service.NewTicketService(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)

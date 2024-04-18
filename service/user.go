@@ -14,6 +14,7 @@ import (
 	"github.com/TEDxITS/website-backend-2024/helpers"
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/utils"
+	"gorm.io/gorm"
 )
 
 type (
@@ -33,12 +34,14 @@ type (
 
 	userService struct {
 		userRepo repository.UserRepository
+		roleRepo repository.RoleRepository
 	}
 )
 
-func NewUserService(ur repository.UserRepository) UserService {
+func NewUserService(ur repository.UserRepository, rr repository.RoleRepository) UserService {
 	return &userService{
 		userRepo: ur,
+		roleRepo: rr,
 	}
 }
 
@@ -102,9 +105,18 @@ func (s *userService) SendVerifyEmail(ctx context.Context, email string) error {
 }
 
 func (s *userService) SendResetPasswordEmail(ctx context.Context, email string) error {
-	_, err := s.userRepo.GetUserByEmail(email)
+	user, err := s.userRepo.GetUserByEmail(email)
 	if err != nil {
 		return dto.ErrUserNotFound
+	}
+
+	role, err := s.roleRepo.GetRolebyId(user.RoleID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+
+	if role.Name != constants.ENUM_ROLE_USER {
+		return dto.ErrAdminNotAllowedResetPassword
 	}
 
 	emailData, err := s.generateResetPasswordEmail(email)
@@ -356,6 +368,15 @@ func (s *userService) ResetPassword(ctx context.Context, token string, req dto.U
 	user, err := s.userRepo.GetUserByEmail(email)
 	if err != nil {
 		return dto.ErrUserNotFound
+	}
+
+	role, err := s.roleRepo.GetRolebyId(user.RoleID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+
+	if role.Name != constants.ENUM_ROLE_USER {
+		return dto.ErrAdminNotAllowedResetPassword
 	}
 
 	hashedPassword, err := helpers.HashPassword(req.Password)
