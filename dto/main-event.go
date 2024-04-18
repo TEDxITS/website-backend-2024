@@ -48,12 +48,12 @@ type (
 		EventName string `json:"event_name" form:"event_name"`
 		Price     int    `json:"price" form:"price"`
 
-		Handphone string    `json:"handphone" form:"handphone"`
-		Birthdate time.Time `json:"birthdate" form:"birthdate"`
-		Seat      string    `json:"seat" form:"seat"`
-		Payment   string    `json:"payment" form:"payment"`
-		WithKit   bool      `json:"with_kit" form:"with_kit"`
-		CreatedAt time.Time `json:"created_at" form:"created_at"`
+		Handphone    string    `json:"handphone" form:"handphone"`
+		Birthdate    time.Time `json:"birthdate" form:"birthdate"`
+		Seat         string    `json:"seat" form:"seat"`
+		Payment      string    `json:"payment" form:"payment"`
+		WithKit      bool      `json:"with_kit" form:"with_kit"`
+		RegisterDate time.Time `json:"registerdate" form:"registerdate"`
 	}
 
 	MainEventCounter struct {

@@ -24,7 +24,7 @@ func EventSeeder(db *gorm.DB) error {
 	var eventList []entity.Event
 	eventList = append(eventList,
 		entity.Event{
-			ID:        uuid.MustParse("7de24efe-0aec-469a-bf0c-8fa8cae3ff3f"),
+			ID:        uuid.MustParse(constants.PreEvent2ID),
 			Name:      constants.PE2Name,
 			Price:     0,
 			WithKit:   &False,

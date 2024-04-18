@@ -6,19 +6,18 @@ import (
 	"github.com/TEDxITS/website-backend-2024/entity"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type (
 	TicketRepository interface {
 		CreateTicket(ticket entity.Ticket) (entity.Ticket, error)
-		GetAllPagination(search string, limit, page int) ([]entity.User, int64, int64, error)
+		JoinGetAllPagination(search string, limit, page int) ([]entity.Ticket, int64, int64, error)
 		FindByUserID(userID string) (entity.Ticket, error)
 		UpdateTicket(ticket entity.Ticket) (entity.Ticket, error)
 		GetTicketByUserId(userId string) (entity.Ticket, error)
 		FindByTicketID(ticketID string) (entity.Ticket, error)
-		GetEventById(id string) (entity.Event, error)
 		GetTicketById(id string) (entity.Ticket, error)
-		GetUserById(id string) (entity.User, error)
 		CountTotal() (int64, error)
 		CountConfirmedPayments() (int64, error)
 		CountCheckedIns() (int64, error)
@@ -45,19 +44,24 @@ func (r *ticketRepository) CreateTicket(ticket entity.Ticket) (entity.Ticket, er
 	return ticket, nil
 }
 
-func (r *ticketRepository) GetAllPagination(search string, limit, page int) ([]entity.User, int64, int64, error) {
-	var users []entity.User
+func (r *ticketRepository) JoinGetAllPagination(search string, limit, page int) ([]entity.Ticket, int64, int64, error) {
+	var tickets []entity.Ticket
 	var count int64
 
 	if search != "" {
-		err := r.db.Model(&entity.User{}).
-			Where("name LIKE ?", "%"+search+"%").
+		err := r.db.
+			Model(&entity.Ticket{}).
+			Joins("JOIN users ON tickets.user_id = users.id").
+			Joins("JOIN events ON tickets.event_id = events.id").
+			Where("users.name LIKE ?", "%"+search+"%").
+			Or("events.name LIKE ?", "%"+search+"%").
+			Or("tickets.ticket_id LIKE ?", "%"+search+"%").
 			Count(&count).Error
 		if err != nil {
 			return nil, 0, 0, err
 		}
 	} else {
-		err := r.db.Model(&entity.User{}).Count(&count).Error
+		err := r.db.Model(&entity.Ticket{}).Count(&count).Error
 		if err != nil {
 			return nil, 0, 0, err
 		}
@@ -66,14 +70,22 @@ func (r *ticketRepository) GetAllPagination(search string, limit, page int) ([]e
 	maxPage := int64(math.Ceil(float64(count) / float64(limit)))
 	offset := (page - 1) * limit
 
-	err := r.db.Model(&entity.User{}).
-		Where("name LIKE ?", "%"+search+"%").
-		Offset(offset).Limit(limit).Find(&users).Error
+	err := r.db.
+		Model(&entity.Ticket{}).
+		Joins("JOIN users ON tickets.user_id = users.id").
+		Joins("JOIN events ON tickets.event_id = events.id").
+		Preload(clause.Associations).
+		Where("users.name LIKE ?", "%"+search+"%").
+		Or("events.name LIKE ?", "%"+search+"%").
+		Or("tickets.ticket_id LIKE ?", "%"+search+"%").
+		Offset(offset).
+		Limit(limit).
+		Find(&tickets).Error
 	if err != nil {
 		return nil, 0, 0, err
 	}
 
-	return users, maxPage, count, nil
+	return tickets, maxPage, count, nil
 }
 
 func (r *ticketRepository) GetTicketByUserId(userId string) (entity.Ticket, error) {
@@ -84,28 +96,12 @@ func (r *ticketRepository) GetTicketByUserId(userId string) (entity.Ticket, erro
 	return ticket, nil
 }
 
-func (r *ticketRepository) GetEventById(id string) (entity.Event, error) {
-	var event entity.Event
-	if err := r.db.Where("id = ?", id).Take(&event).Error; err != nil {
-		return entity.Event{}, err
-	}
-	return event, nil
-}
-
 func (r *ticketRepository) GetTicketById(id string) (entity.Ticket, error) {
 	var ticket entity.Ticket
 	if err := r.db.Where("ticket_id = ?", id).Take(&ticket).Error; err != nil {
 		return entity.Ticket{}, err
 	}
 	return ticket, nil
-}
-
-func (r *ticketRepository) GetUserById(id string) (entity.User, error) {
-	var user entity.User
-	if err := r.db.Where("id = ?", id).Take(&user).Error; err != nil {
-		return entity.User{}, err
-	}
-	return user, nil
 }
 
 func (r *ticketRepository) CountTotal() (int64, error) {

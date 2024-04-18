@@ -11,7 +11,6 @@ import (
 	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/utils"
-	"gorm.io/gorm"
 )
 
 type (
@@ -112,7 +111,7 @@ func (s *mainEventService) CheckIn(ctx context.Context, req dto.MainEventCheckIn
 }
 
 func (s *mainEventService) GetStatus(ctx context.Context) ([]dto.MainEventDetailResponse, error) {
-	events, err := s.eventRepo.GetAllExcept("7de24efe-0aec-469a-bf0c-8fa8cae3ff3f")
+	events, err := s.eventRepo.GetAllExcept(constants.PreEvent2ID)
 	if err != nil {
 		return []dto.MainEventDetailResponse{}, err
 	}
@@ -178,37 +177,21 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 		page = constants.ENUM_PAGINATION_PAGE
 	}
 
-	users, maxPage, count, err := s.ticketRepo.GetAllPagination(req.Search, limit, page)
+	tickets, maxPage, count, err := s.ticketRepo.JoinGetAllPagination(req.Search, limit, page)
 	if err != nil {
 		return dto.MainEventPaginationResponse{}, err
 	}
 
 	var result []dto.MainEventPaginationData
-	for _, user := range users {
-		ticket, err := s.ticketRepo.GetTicketByUserId(user.ID.String())
-		if err != nil {
-			if err == gorm.ErrRecordNotFound {
-				continue
-			}
-			return dto.MainEventPaginationResponse{}, err
-		}
-
-		event, err := s.eventRepo.GetByID(ticket.EventID)
-		if err != nil {
-			if err == gorm.ErrRecordNotFound {
-				continue
-			}
-			return dto.MainEventPaginationResponse{}, err
-		}
-
+	for _, t := range tickets {
 		result = append(result, dto.MainEventPaginationData{
-			ID:        ticket.TicketID,
-			Name:      user.Name,
-			Email:     user.Email,
-			Confirmed: *ticket.PaymentConfirmed,
-			CheckedIn: *ticket.CheckedIn,
-			EventName: event.Name,
-			Price:     event.Price,
+			ID:        t.TicketID,
+			Name:      t.User.Name,
+			Email:     t.User.Email,
+			Confirmed: *t.PaymentConfirmed,
+			CheckedIn: *t.CheckedIn,
+			EventName: t.Event.Name,
+			Price:     t.Event.Price,
 		})
 	}
 
@@ -228,14 +211,17 @@ func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (d
 	if err != nil {
 		return dto.MainEventResponse{}, dto.ErrTicketNotFound
 	}
+
 	event, err := s.eventRepo.GetByID(ticket.EventID)
 	if err != nil {
 		return dto.MainEventResponse{}, dto.ErrEventNotFound
 	}
+
 	user, err := s.userRepo.GetUserById(ticket.UserID)
 	if err != nil {
 		return dto.MainEventResponse{}, dto.ErrUserNotFound
 	}
+
 	return dto.MainEventResponse{
 		ID:        ticket.TicketID,
 		Name:      user.Name,
@@ -245,12 +231,12 @@ func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (d
 		EventName: event.Name,
 		Price:     event.Price,
 
-		Handphone: ticket.Handphone,
-		Birthdate: ticket.Birthdate,
-		Seat:      ticket.Seat,
-		Payment:   ticket.Payment,
-		WithKit:   *event.WithKit,
-		CreatedAt: ticket.CreatedAt,
+		Handphone:    ticket.Handphone,
+		Birthdate:    ticket.Birthdate,
+		Seat:         ticket.Seat,
+		Payment:      ticket.Payment,
+		WithKit:      *event.WithKit,
+		RegisterDate: ticket.CreatedAt,
 	}, nil
 }
 
