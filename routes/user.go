@@ -1,14 +1,14 @@
 package routes
 
 import (
+	"github.com/TEDxITS/website-backend-2024/config"
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/controller"
 	"github.com/TEDxITS/website-backend-2024/middleware"
-	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/gin-gonic/gin"
 )
 
-func User(route *gin.Engine, userController controller.UserController, jwtService service.JWTService) {
+func User(route *gin.Engine, userController controller.UserController, jwtService config.JWTService) {
 	routes := route.Group("/api/user")
 	{
 		routes.POST("", userController.Register)

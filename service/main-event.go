@@ -3,18 +3,23 @@ package service
 import (
 	"bytes"
 	"context"
+	"net/http"
 	"os"
 	"text/template"
 	"time"
 
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
+	"github.com/TEDxITS/website-backend-2024/entity"
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/utils"
+	"github.com/TEDxITS/website-backend-2024/websocket"
+	"gorm.io/gorm"
 )
 
 type (
 	MainEventService interface {
+		RegisterMainEvent(context.Context, dto.MainEventRegister, string) error
 		ConfirmPayment(context.Context, dto.MainEventConfirmPaymentRequest) error
 		CheckIn(context.Context, dto.MainEventCheckInRequest) error
 		GetStatus(context.Context) ([]dto.MainEventDetailResponse, error)
@@ -27,15 +32,137 @@ type (
 		eventRepo  repository.EventRepository
 		userRepo   repository.UserRepository
 		ticketRepo repository.TicketRepository
+		bucketRepo repository.BucketRepository
+		queueHub   []websocket.QueueHub
 	}
 )
 
-func NewMainEventService(uRepo repository.UserRepository, tRepo repository.TicketRepository, eRepo repository.EventRepository) MainEventService {
+func NewMainEventService(
+	uRepo repository.UserRepository,
+	tRepo repository.TicketRepository,
+	eRepo repository.EventRepository,
+	bRepo repository.BucketRepository,
+	qHub []websocket.QueueHub,
+) MainEventService {
 	return &mainEventService{
 		eventRepo:  eRepo,
 		userRepo:   uRepo,
 		ticketRepo: tRepo,
+		bucketRepo: bRepo,
+		queueHub:   qHub,
 	}
+}
+
+func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEventRegister, userID string) error {
+	hub, err := func() (websocket.QueueHub, error) {
+		for _, hub := range s.queueHub {
+			if hub.IsEventHandler(req.EventID) {
+				return hub, nil
+			}
+		}
+		return nil, dto.ErrEventNotFound
+	}()
+
+	if err != nil {
+		return err
+	}
+
+	event, err := s.eventRepo.GetByID(req.EventID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return dto.ErrEventNotFound
+		}
+		return err
+	}
+
+	if time.Now().Before(event.StartDate.Add(-7 * time.Hour)) {
+		return dto.ErrMainEventNotYetOpen
+	}
+
+	if time.Now().After(event.EndDate.Add(-7 * time.Hour)) {
+		return dto.ErrMainEventClosed
+	}
+
+	if event.Registers >= event.Capacity {
+		return dto.ErrMainEventFull
+	}
+
+	client := hub.GetClientInTransactionByUserID(userID)
+	if client == nil {
+		return dto.ErrUserNotInTransaction
+	}
+
+	if client.IsWithMerch() != *event.WithKit {
+		return dto.ErrMismatchData
+	}
+
+	// validating uploaded file
+	if req.PaymentFile.Size > dto.MB*5 {
+		return dto.ErrMaxFileSize5MB
+	}
+
+	file, err := req.PaymentFile.Open()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	fileBuffer := make([]byte, 512)
+	if _, err := file.Read(fileBuffer); err != nil {
+		return err
+	}
+
+	if _, err := file.Seek(0, 0); err != nil {
+		return err
+	}
+
+	// only allow for jpeg/jpg/png
+	fileType := http.DetectContentType(fileBuffer)
+	if fileType != dto.ENUM_FILE_TYPE_JPEG && fileType != dto.ENUM_FILE_TYPE_PNG {
+		return dto.ErrFileMustBeImage
+	}
+	ext := "." + utils.GetExtensions(req.PaymentFile.Filename)
+
+	// generating unique code
+	var code string
+	for {
+		code = utils.GenUniqueCode()
+		if _, err := s.ticketRepo.GetTicketById(code); err != nil && err != gorm.ErrRecordNotFound {
+			return err
+		} else {
+			break
+		}
+	}
+
+	req.PaymentFile.Filename = code + ext
+	err = s.bucketRepo.UploadFile(dto.ENUM_STORAGE_FOLDER_MAIN_EVENT, req.PaymentFile)
+	if err != nil {
+		return dto.ErrFailedToStorePaymentFile
+	}
+
+	False := false
+	getFileEndpoint := dto.STORAGE_ENDPOINT_MAIN_EVENT + code + ext
+	ticket := entity.Ticket{
+		TicketID:         code,
+		UserID:           userID,
+		EventID:          req.EventID,
+		Handphone:        req.Handphone,
+		Birthdate:        req.Birthdate,
+		Seat:             req.Seat,
+		Payment:          getFileEndpoint,
+		PaymentConfirmed: &False,
+		CheckedIn:        &False,
+	}
+
+	if _, err := s.ticketRepo.CreateTicket(ticket); err != nil {
+		return err
+	}
+
+	// signal the client to exit the handler thread
+	// and sequentially unregister from the hub
+	client.Done(nil)
+
+	return nil
 }
 
 func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEventConfirmPaymentRequest) error {

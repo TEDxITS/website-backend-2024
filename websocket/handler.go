@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TEDxITS/website-backend-2024/config"
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
-	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -34,11 +34,11 @@ type (
 
 	ticketQueue struct {
 		Hub        QueueHub
-		jwtService service.JWTService
+		jwtService config.JWTService
 	}
 )
 
-func NewTicketQueue(hub QueueHub, jwt service.JWTService) TicketQueue {
+func NewTicketQueue(hub QueueHub, jwt config.JWTService) TicketQueue {
 	return &ticketQueue{
 		Hub:        hub,
 		jwtService: jwt,
@@ -54,6 +54,8 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 
 	client := NewClient(conn)
 
+	// 10s to authenticate
+	client.SetDeadline(time.Now().Add(constants.WSOCKET_AUTH_TIME_LIMIT))
 	for !client.IsAuthenticated() {
 		var token string
 
@@ -100,13 +102,35 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 
 	// register client to hub for tracking
 	Handle.Register(client)
-	defer Handle.Unregister(client)
 
+	// set no timeout when waiting in queue
+	client.SetDeadline(time.Time{})
+
+	// the only error comes from this queue turn
+	// is only if the main event is full
 	time.Sleep(200 * time.Millisecond)
 	if err := Handle.WaitQueueTurn(client); nil != err {
+		if err != dto.ErrWSMainEventFull {
+			Handle.Unregister(client)
+		}
 		return
 	}
 
+	// we don't wanna unregister if the the event is full
+	// because it would trigger Hub.BroadcastNext()
+	// which in turn will trigger client.Notify()
+	// which is a waste of resource
+
+	// the two mentioned method above is already executed
+	// in the event of the main event is full
+
+	// so we only unregister in case of:
+	// 	1. client's transaction is  done
+	//  2. client's transaction timeout
+	defer Handle.Unregister(client)
+
+	// 3m to finish transaction
+	client.SetDeadline(time.Now().Add(constants.WSOCKET_TRANSACTION_TIME_LIMIT))
 	if err := client.SendTextMessage(dto.WSOCKET_TRANSACTION_START); nil != err {
 		return
 	}
@@ -126,6 +150,9 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 
 	for {
 		select {
+		// case for the client's action:
+		// 1. change the transaction type (with/without merch)
+		// 2. seat selection
 		case message := <-incoming:
 			if len(message) == 0 {
 				if err := client.SendTextMessage(dto.ErrWSInvalidCommand.Error()); nil != err {
@@ -150,10 +177,14 @@ func (Handle *ticketQueue) Serve(ctx *gin.Context) {
 					return
 				}
 			}
+
+		// notify client of changing in information such as the stock of merch or the seat
 		case message := <-client.Notification:
 			if err := client.SendTextMessage(message); err != nil {
 				return
 			}
+
+		// notify the handler to exit/return in case of the transaction is done
 		case err := <-client.Quit:
 			if err == nil {
 				client.SendTextMessage(dto.WSOCKET_TRANSACTION_SUCCESS)
@@ -175,6 +206,7 @@ func (Handle *ticketQueue) WaitQueueTurn(client *Client) error {
 		return nil
 	}
 
+	// get and send the initial queue line number
 	queueNumber := Handle.Hub.GetWaitingLength()
 	message, _ := json.Marshal(dto.S2CQueueLineInfo{
 		QueueNumber: queueNumber,
@@ -185,6 +217,8 @@ func (Handle *ticketQueue) WaitQueueTurn(client *Client) error {
 
 	for {
 		select {
+		// receiving the next client to forward to transaction
+		// if not the current client, then it will simply decrement its queue number
 		case next := <-client.Next:
 			if next == client {
 				return nil
@@ -198,6 +232,8 @@ func (Handle *ticketQueue) WaitQueueTurn(client *Client) error {
 			if err := client.SendTextMessage(string(message)); nil != err {
 				return err
 			}
+
+		// notification of the main event is full
 		case notif := <-client.Notification:
 			if notif == dto.ErrWSMainEventFull.Error() {
 				client.SendTextMessage(dto.ErrWSMainEventFull.Error())

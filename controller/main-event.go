@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/TEDxITS/website-backend-2024/utils"
@@ -11,6 +12,7 @@ import (
 
 type (
 	MainEventController interface {
+		RegisterMainEvent(ctx *gin.Context)
 		ConfirmPayment(ctx *gin.Context)
 		CheckIn(ctx *gin.Context)
 		GetStatus(ctx *gin.Context)
@@ -28,6 +30,26 @@ func NewMainEventController(service service.MainEventService) MainEventControlle
 	return &mainEventController{
 		mainEventService: service,
 	}
+}
+
+func (c *mainEventController) RegisterMainEvent(ctx *gin.Context) {
+	var req dto.MainEventRegister
+	if err := ctx.ShouldBind(&req); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	err := c.mainEventService.RegisterMainEvent(ctx.Request.Context(), req, ctx.GetString(constants.CTX_KEY_USER_ID))
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_CREATE_TICKET, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_CREATE_TICKET, nil)
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (c *mainEventController) ConfirmPayment(ctx *gin.Context) {

@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/TEDxITS/website-backend-2024/config"
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
-	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/TEDxITS/website-backend-2024/utils"
 	"github.com/gin-gonic/gin"
 )
 
-func Authenticate(jwtService service.JWTService) gin.HandlerFunc {
+func Authenticate(jwtService config.JWTService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" {

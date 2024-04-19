@@ -40,7 +40,7 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &False,
 			Capacity:  constants.MainEventEarlyBirdNoMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2024, time.April, 24, 12, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2023, time.April, 24, 12, 0, 0, 0, time.UTC),
 			EndDate:   time.Date(2024, time.April, 30, 12, 0, 0, 0, time.UTC),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventPreSaleNoMerchID),
