@@ -19,7 +19,9 @@ const (
 	CTX_KEY_ROLE_NAME = "role"
 
 	JWT_EXPIRE_TIME_IN_MINUTES = 120
-	WSOCKET_TIME_LIMIT         = time.Minute * time.Duration(3)
+
+	WSOCKET_AUTH_TIME_LIMIT        = time.Second * time.Duration(10)
+	WSOCKET_TRANSACTION_TIME_LIMIT = (time.Minute * time.Duration(3)) + (time.Second * time.Duration(20))
 )
 
 var (

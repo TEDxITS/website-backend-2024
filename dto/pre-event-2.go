@@ -8,18 +8,10 @@ import (
 
 const (
 	// Failed
-	MESSAGE_FAILED_CREATE_TICKET   = "failed create ticket"
-	MESSAGE_FAILED_GET_TICKET      = "failed get ticket"
-	MESSAGE_FAILED_CONFIRM_PAYMENT = "failed confirm payment"
-	MESSAGE_FAILED_CHECK_IN        = "failed check in"
-	MESSAGE_FAILED_EVENT           = "failed get event"
+	MESSAGE_FAILED_EVENT = "failed get event"
 
 	// Success
-	MESSAGE_SUCCESS_CREATE_TICKET   = "success create ticket"
-	MESSAGE_SUCCESS_GET_TICKET      = "success get ticket"
-	MESSAGE_SUCCESS_CONFIRM_PAYMENT = "success confirm payment"
-	MESSAGE_SUCCESS_CHECK_IN        = "success check in"
-	MESSAGE_SUCCESS_EVENT           = "success get event"
+	MESSAGE_SUCCESS_EVENT = "success get event"
 )
 
 var (

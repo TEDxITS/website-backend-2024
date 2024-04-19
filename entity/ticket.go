@@ -12,8 +12,8 @@ type Ticket struct {
 	Seat      string    `json:"seat" form:"seat"`
 	Payment   string    `json:"payment" form:"payment"`
 
-	PaymentConfirmed *bool `json:"payment_confirmed" form:"payment_confirmed"`
-	CheckedIn        *bool `json:"checked_in" form:"checked_in"`
+	PaymentConfirmed *bool `json:"payment_confirmed" form:"payment_confirmed" default:"false"`
+	CheckedIn        *bool `json:"checked_in" form:"checked_in" default:"false"`
 
 	User  *User  `gorm:"foreignKey:UserID"`
 	Event *Event `gorm:"foreignKey:EventID"`

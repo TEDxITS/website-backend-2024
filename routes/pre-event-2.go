@@ -3,13 +3,13 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/TEDxITS/website-backend-2024/config"
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/controller"
 	"github.com/TEDxITS/website-backend-2024/middleware"
-	"github.com/TEDxITS/website-backend-2024/service"
 )
 
-func PreEvent2(route *gin.Engine, preevent2Controller controller.PreEvent2Controller, jwtService service.JWTService) {
+func PreEvent2(route *gin.Engine, preevent2Controller controller.PreEvent2Controller, jwtService config.JWTService) {
 	routes := route.Group("/api/ticket")
 	{
 		routes.POST("/pre-event-2", preevent2Controller.CreatePE2RSVP)

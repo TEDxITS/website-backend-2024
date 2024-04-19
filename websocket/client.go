@@ -4,7 +4,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/gorilla/websocket"
 )
 
@@ -26,10 +25,6 @@ type (
 )
 
 func NewClient(conn *websocket.Conn) *Client {
-	deadline := time.Now().Add(constants.WSOCKET_TIME_LIMIT)
-	conn.SetReadDeadline(deadline)
-	conn.SetWriteDeadline(deadline)
-
 	return &Client{
 		Conn: conn,
 
@@ -43,6 +38,11 @@ func NewClient(conn *websocket.Conn) *Client {
 
 		Mutex: new(sync.Mutex),
 	}
+}
+
+func (c *Client) SetDeadline(deadline time.Time) {
+	c.Conn.SetReadDeadline(deadline)
+	c.Conn.SetWriteDeadline(deadline)
 }
 
 func (c *Client) SendTextMessage(msg string) error {

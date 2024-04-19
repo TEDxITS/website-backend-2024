@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/TEDxITS/website-backend-2024/config"
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/dto"
 	"github.com/TEDxITS/website-backend-2024/entity"
@@ -25,12 +26,12 @@ type (
 	}
 
 	userController struct {
-		jwtService  service.JWTService
+		jwtService  config.JWTService
 		userService service.UserService
 	}
 )
 
-func NewUserController(us service.UserService, jwt service.JWTService) UserController {
+func NewUserController(us service.UserService, jwt config.JWTService) UserController {
 	return &userController{
 		jwtService:  jwt,
 		userService: us,

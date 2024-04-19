@@ -23,8 +23,9 @@ import (
 
 func main() {
 	var (
-		db         *gorm.DB           = config.SetUpDatabaseConnection()
-		jwtService service.JWTService = service.NewJWTService()
+		db         *gorm.DB               = config.SetUpDatabaseConnection()
+		jwtService config.JWTService      = config.NewJWTService()
+		bucket     *config.SupabaseBucket = config.SetUpSupabaseBucket()
 
 		// repositories
 		userRepository          repository.UserRepository          = repository.NewUserRepository(db)
@@ -33,18 +34,20 @@ func main() {
 		pe2RSVPRepo             repository.PE2RSVPRepository       = repository.NewPE2RSVPRepository(db)
 		roleRepo                repository.RoleRepository          = repository.NewRoleRepository(db)
 		ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
+		bucketRepository        repository.BucketRepository        = repository.NewSupabaseBucketRepository(bucket)
+
+		// websocket hub
+		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
+		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
+		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
 
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository, roleRepo)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
 		preEvent2Service     service.PreEvent2Service     = service.NewPreEvent2Service(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
-		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository)
-
-		// websocket hub
-		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
-		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
-		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
+		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository, bucketRepository, []websocket.QueueHub{earlyBirdHub, preSaleHub, normalHub})
+		storageService       service.StorageService       = service.NewStorageService(bucketRepository)
 
 		// controllers
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
@@ -52,6 +55,7 @@ func main() {
 		eventController         controller.EventController         = controller.NewEventController(eventService)
 		preEvent2Controller     controller.PreEvent2Controller     = controller.NewPreEvent2Controller(preEvent2Service)
 		mainEventController     controller.MainEventController     = controller.NewMainEventController(mainEventService)
+		storageController       controller.StorageController       = controller.NewStorageController(storageService)
 
 		// websocket handler
 		earlyBirdQueue websocket.TicketQueue = websocket.NewTicketQueue(earlyBirdHub, jwtService)
@@ -70,6 +74,7 @@ func main() {
 	routes.PreEvent2(server, preEvent2Controller, jwtService)
 	routes.MainEvent(server, mainEventController, jwtService)
 	routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
+	routes.Storage(server, storageController, jwtService)
 
 	// https://github.com/gin-contrib/cors
 	// https://stackoverflow.com/questions/76196547/websocket-returning-403-every-time
