@@ -174,19 +174,19 @@ func (s *userService) generateResetPasswordEmail(userEmail string) (utils.Email,
 		return utils.Email{}, err
 	}
 
-	resetPasswordLink := constants.BASE_URL + "/api/user/reset-password?token=" + token
-	readHtml, err := os.ReadFile("./utils/template/base_mail.html")
+	resetPasswordLink := constants.BASE_URL + "/auth?reset_password=" + token
+	readHtml, err := os.ReadFile("./utils/template/mail_reset_password.html")
 
 	if err != nil {
 		return utils.Email{}, err
 	}
 
 	data := struct {
-		Email  string
-		Verify string
+		Email     string
+		ResetLink string
 	}{
-		Email:  userEmail,
-		Verify: resetPasswordLink,
+		Email:     userEmail,
+		ResetLink: resetPasswordLink,
 	}
 
 	tmpl, err := template.New("custom").Parse(string(readHtml))
@@ -213,8 +213,8 @@ func (s *userService) generateVerificationEmail(userEmail string) (utils.Email, 
 		return utils.Email{}, err
 	}
 
-	verifyLink := constants.BASE_URL + "/api/user/verify?token=" + token
-	readHtml, err := os.ReadFile("./utils/template/base_mail.html")
+	verifyLink := constants.BASE_URL + "/auth?verify=" + token
+	readHtml, err := os.ReadFile("./utils/template/mail_verify_user.html")
 
 	if err != nil {
 		return utils.Email{}, err

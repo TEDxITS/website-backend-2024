@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmation Payment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 0 10px rgba(226, 55, 55, 0.1);
+      border-radius: 5px;
+    }
+    h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    p {
+      color: #666;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Confirmation Payment</h1>
+    <p>Hello, {{ .Name }}</p>
+    <p>
+      Thank you for your purchase. We've received your payment for the upcoming event.
+    </p>
+    <p>
+      Your payment is being processed, and we are now awaiting confirmation from our admin team.
+      Once confirmed, you will receive further email regarding your ticket.
+    </p>
+    <p>
+      We appreciate your patience and understanding in this process. If you have any questions or concerns, feel free to reach out to us.
+    </p>
+    <p>Thank you.</p>
+  </div>
+</body>
+</html>

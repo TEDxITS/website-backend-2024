@@ -36,7 +36,7 @@ var (
 
 type (
 	MainEventConfirmPaymentRequest struct {
-		Email string `json:"email" form:"email" binding:"required"`
+		Code string `json:"code" form:"code" binding:"required"`
 	}
 
 	MainEventCheckInRequest struct {
