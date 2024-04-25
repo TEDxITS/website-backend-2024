@@ -158,6 +158,42 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 		return err
 	}
 
+	// send email
+	user, err := s.userRepo.GetUserById(userID)
+	if err != nil {
+		return err
+	}
+
+	readHtml, err := os.ReadFile("./utils/template/mail_payment_received.html")
+	if err != nil {
+		return err
+	}
+
+	tmpl, err := template.New("custom").Parse(string(readHtml))
+	if err != nil {
+		return err
+	}
+
+	var strMail bytes.Buffer
+	if err := tmpl.Execute(&strMail, struct {
+		Name string
+	}{
+		Name: user.Name,
+	}); err != nil {
+		return err
+	}
+
+	emailData := utils.Email{
+		Email:   user.Email,
+		Subject: "Payment Received",
+		Body:    strMail.String(),
+	}
+
+	err = utils.SendMail(emailData)
+	if err != nil {
+		return dto.ErrSendEmail
+	}
+
 	// signal the client to exit the handler thread
 	// and sequentially unregister from the hub
 	client.Done(nil)
@@ -166,14 +202,14 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 }
 
 func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEventConfirmPaymentRequest) error {
-	email, err := s.userRepo.GetUserByEmail(req.Email)
-	if err != nil {
-		return dto.ErrUserNotFound
-	}
-
-	ticket, err := s.ticketRepo.FindByUserID(email.ID.String())
+	ticket, err := s.ticketRepo.FindByTicketID(req.Code)
 	if err != nil {
 		return dto.ErrTicketNotFound
+	}
+
+	user, err := s.userRepo.GetUserById(ticket.UserID)
+	if err != nil {
+		return dto.ErrUserNotFound
 	}
 
 	confirmed := true
@@ -183,17 +219,17 @@ func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEvent
 		return err
 	}
 
-	readHtml, err := os.ReadFile("./utils/template/confirmation_payment.html")
+	readHtml, err := os.ReadFile("./utils/template/mail_confirmation_payment.html")
 
 	if err != nil {
 		return err
 	}
 
 	data := struct {
-		Email    string
+		Name     string
 		TicketID string
 	}{
-		Email:    req.Email,
+		Name:     user.Name,
 		TicketID: ticket.TicketID,
 	}
 
@@ -208,7 +244,7 @@ func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEvent
 	}
 
 	emailData := utils.Email{
-		Email:   req.Email,
+		Email:   user.Email,
 		Subject: "Confirmation Payment",
 		Body:    strMail.String(),
 	}
