@@ -18,6 +18,10 @@ const (
 	MESSAGE_SUCCESS_GET_TICKET      = "success get ticket"
 	MESSAGE_SUCCESS_CONFIRM_PAYMENT = "success confirm payment"
 	MESSAGE_SUCCESS_CHECK_IN        = "success check in"
+
+	MAIN_EVENT_CLOSED = "closed"
+	MAIN_EVENT_OPEN   = "open"
+	MAIN_EVENT_FULL   = "full"
 )
 
 var (
@@ -43,10 +47,16 @@ type (
 		Code string `json:"code" form:"code" binding:"required"`
 	}
 
-	MainEventDetailResponse struct {
-		EventResponse
-		Status        bool          `json:"status"`
-		RemainingTime RemainingTime `json:"remaining_time"`
+	MainEventStatusResponse struct {
+		EarlyBird MainEventStatusDetail `json:"early_bird"`
+		PreSale   MainEventStatusDetail `json:"pre_sale"`
+		Normal    MainEventStatusDetail `json:"normal"`
+	}
+
+	MainEventStatusDetail struct {
+		Status      string        `json:"status"`
+		UntilOpen   RemainingTime `json:"until_open"`
+		UntilClosed RemainingTime `json:"until_closed"`
 	}
 
 	RemainingTime struct {

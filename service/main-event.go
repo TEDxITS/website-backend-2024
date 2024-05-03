@@ -22,7 +22,7 @@ type (
 		RegisterMainEvent(context.Context, dto.MainEventRegister, string) error
 		ConfirmPayment(context.Context, dto.MainEventConfirmPaymentRequest) error
 		CheckIn(context.Context, dto.MainEventCheckInRequest) error
-		GetStatus(context.Context) ([]dto.MainEventDetailResponse, error)
+		GetStatus(context.Context) (dto.MainEventStatusResponse, error)
 		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.MainEventPaginationResponse, error)
 		GetMainEventDetail(context.Context, string) (dto.MainEventResponse, error)
 		GetMainEventCounter(context.Context) (dto.MainEventCounter, error)
@@ -273,57 +273,65 @@ func (s *mainEventService) CheckIn(ctx context.Context, req dto.MainEventCheckIn
 	return nil
 }
 
-func (s *mainEventService) GetStatus(ctx context.Context) ([]dto.MainEventDetailResponse, error) {
-	events, err := s.eventRepo.GetAllExcept(constants.PreEvent2ID)
+func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusResponse, error) {
+	early_bird, err := s.eventRepo.GetByID(constants.MainEventEarlyBirdNoMerchID)
 	if err != nil {
-		return []dto.MainEventDetailResponse{}, err
+		return dto.MainEventStatusResponse{}, err
 	}
 
-	var result []dto.MainEventDetailResponse
-	for _, e := range events {
-		eventResponse := dto.MainEventDetailResponse{
-			EventResponse: dto.EventResponse{
-				ID:        e.ID.String(),
-				Name:      e.Name,
-				Price:     e.Price,
-				StartDate: e.StartDate,
-				EndDate:   e.EndDate,
-			},
-		}
+	pre_sale, err := s.eventRepo.GetByID(constants.MainEventPreSaleNoMerchID)
+	if err != nil {
+		return dto.MainEventStatusResponse{}, err
+	}
 
-		eventResponse.Status = true
+	normal, err := s.eventRepo.GetByID(constants.MainEventNormalNoMerchID)
+	if err != nil {
+		return dto.MainEventStatusResponse{}, err
+	}
+
+	preprocess := func(e entity.Event) dto.MainEventStatusDetail {
+		status := dto.MAIN_EVENT_OPEN
 
 		if e.Registers >= e.Capacity {
-			eventResponse.Status = false
+			status = dto.MAIN_EVENT_FULL
 		}
 
 		if time.Now().Before(e.StartDate.Add(-7 * time.Hour)) {
-			eventResponse.Status = false
+			status = dto.MAIN_EVENT_CLOSED
 		}
 
 		if time.Now().After(e.EndDate.Add(-7 * time.Hour)) {
-			eventResponse.Status = false
+			status = dto.MAIN_EVENT_FULL
 		}
 
-		difference := e.EndDate.Add(-7 * time.Hour).Sub(time.Now())
+		endDateDifference := e.EndDate.Add(-7 * time.Hour).Sub(time.Now())
+		endDateTotal := int(endDateDifference.Seconds())
 
-		total := int(difference.Seconds())
-		days := int(total / (60 * 60 * 24))
-		hours := int(total / (60 * 60) % 24)
-		minutes := int(total/60) % 60
-		seconds := int(total % 60)
+		startDateDifference := e.StartDate.Add(-7 * time.Hour).Sub(time.Now())
+		startDateTotal := int(startDateDifference.Seconds())
 
-		eventResponse.RemainingTime = dto.RemainingTime{
-			Days:    days,
-			Hours:   hours,
-			Minutes: minutes,
-			Seconds: seconds,
+		return dto.MainEventStatusDetail{
+			Status: status,
+			UntilOpen: dto.RemainingTime{
+				Days:    int(endDateTotal / (60 * 60 * 24)),
+				Hours:   int(endDateTotal / (60 * 60) % 24),
+				Minutes: int(endDateTotal/60) % 60,
+				Seconds: int(endDateTotal % 60),
+			},
+			UntilClosed: dto.RemainingTime{
+				Days:    int(startDateTotal / (60 * 60 * 24)),
+				Hours:   int(startDateTotal / (60 * 60) % 24),
+				Minutes: int(startDateTotal/60) % 60,
+				Seconds: int(startDateTotal % 60),
+			},
 		}
-
-		result = append(result, eventResponse)
 	}
 
-	return result, nil
+	return dto.MainEventStatusResponse{
+		EarlyBird: preprocess(early_bird),
+		PreSale:   preprocess(pre_sale),
+		Normal:    preprocess(normal),
+	}, nil
 }
 
 func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.MainEventPaginationResponse, error) {
