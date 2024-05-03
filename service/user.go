@@ -174,7 +174,7 @@ func (s *userService) generateResetPasswordEmail(userEmail string) (utils.Email,
 		return utils.Email{}, err
 	}
 
-	resetPasswordLink := constants.BASE_URL + "/auth?reset_password=" + token
+	resetPasswordLink := constants.BASE_URL + "/auth/reset-password?token=" + token
 	readHtml, err := os.ReadFile("./utils/template/mail_reset_password.html")
 
 	if err != nil {
