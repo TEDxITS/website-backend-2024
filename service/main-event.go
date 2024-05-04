@@ -327,11 +327,20 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 		}
 	}
 
-	return dto.MainEventStatusResponse{
+	res := dto.MainEventStatusResponse{
 		EarlyBird: preprocess(early_bird),
 		PreSale:   preprocess(pre_sale),
 		Normal:    preprocess(normal),
-	}, nil
+	}
+
+	res.EarlyBird.NoMerchID = constants.MainEventEarlyBirdNoMerchID
+	res.PreSale.NoMerchID = constants.MainEventPreSaleNoMerchID
+	res.Normal.NoMerchID = constants.MainEventNormalNoMerchID
+	res.EarlyBird.WithMerchID = constants.MainEventEarlyBirdWithMerchID
+	res.PreSale.WithMerchID = constants.MainEventPreSaleWithMerchID
+	res.Normal.WithMerchID = constants.MainEventNormalWithMerchID
+
+	return res, nil
 }
 
 func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.MainEventPaginationResponse, error) {

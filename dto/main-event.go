@@ -55,6 +55,8 @@ type (
 
 	MainEventStatusDetail struct {
 		Status      string        `json:"status"`
+		NoMerchID   string        `json:"no_merch_id"`
+		WithMerchID string        `json:"with_merch_id"`
 		UntilOpen   RemainingTime `json:"until_open"`
 		UntilClosed RemainingTime `json:"until_closed"`
 	}
