@@ -148,7 +148,6 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 		EventID:          req.EventID,
 		Handphone:        req.Handphone,
 		Birthdate:        req.Birthdate,
-		Seat:             req.Seat,
 		Payment:          getFileEndpoint,
 		PaymentConfirmed: &False,
 		CheckedIn:        &False,

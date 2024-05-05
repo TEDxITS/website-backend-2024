@@ -14,5 +14,13 @@
     "password": "SuperSecurePassword",
     "is_verified": true,
     "role_id": "7688c0e9-78ef-4d06-b6ee-77807b526fed" 
+  },
+  {
+    "id": "09940b44-a3a2-48fc-af59-eeec111ddb77",
+    "name": "ordinary user",
+    "email": "user2@gmail.com",
+    "password": "SuperSecurePassword",
+    "is_verified": true,
+    "role_id": "7688c0e9-78ef-4d06-b6ee-77807b526fed" 
   }
 ]

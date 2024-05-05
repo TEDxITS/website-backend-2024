@@ -107,10 +107,9 @@ type (
 	}
 
 	MainEventRegister struct {
-		EventID     string                `json:"event_id" form:"event_id"`
-		Handphone   string                `json:"handphone" form:"handphone"`
-		Birthdate   time.Time             `json:"birthdate" form:"birthdate"`
-		Seat        string                `json:"seat" form:"seat"`
-		PaymentFile *multipart.FileHeader `json:"payment_file" form:"payment_file"`
+		EventID     string                `json:"event_id" form:"event_id" binding:"required"`
+		Handphone   string                `json:"handphone" form:"handphone" binding:"required"`
+		Birthdate   time.Time             `json:"birthdate" form:"birthdate" binding:"required"`
+		PaymentFile *multipart.FileHeader `json:"payment_file" form:"payment_file" binding:"required"`
 	}
 )
