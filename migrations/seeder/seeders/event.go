@@ -40,7 +40,7 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &False,
 			Capacity:  constants.MainEventEarlyBirdNoMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2024, time.May, 6, 15, 0, 0, 0, time.Now().UTC().Location()),
+			StartDate: time.Date(2024, time.May, 6, 19, 0, 0, 0, time.Now().UTC().Location()),
 			EndDate:   time.Date(2024, time.May, 7, 15, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventPreSaleNoMerchID),
@@ -67,7 +67,7 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &True,
 			Capacity:  constants.MainEventEarlyBirdWithMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2024, time.May, 6, 15, 0, 0, 0, time.Now().UTC().Location()),
+			StartDate: time.Date(2024, time.May, 6, 19, 0, 0, 0, time.Now().UTC().Location()),
 			EndDate:   time.Date(2024, time.May, 7, 15, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventPreSaleWithMerchID),

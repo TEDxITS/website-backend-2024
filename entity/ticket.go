@@ -1,6 +1,11 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type Ticket struct {
 	TicketID string `json:"ticket_id" form:"ticket_id" gorm:"primaryKey" `
@@ -19,4 +24,23 @@ type Ticket struct {
 	Event *Event `gorm:"foreignKey:EventID"`
 
 	Timestamp
+}
+
+func (t *Ticket) BeforeCreate(tx *gorm.DB) error {
+	var event Event
+	if err := tx.Model(&Event{}).Where(Event{
+		ID: uuid.MustParse(t.EventID),
+	}).Take(&event).Error; err != nil {
+		return err
+	}
+
+	event.Registers += 1
+
+	if err := tx.Model(&Event{}).Where(Event{
+		ID: uuid.MustParse(t.EventID),
+	}).Updates(event).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
