@@ -2,12 +2,12 @@ package constants
 
 const (
 	PE2Name                     = "Pre-event 2"
-	MainEventEarlyBirdWithMerch = "Early Bird with Merch"
-	MainEventPreSaleWithMerch   = "Pre Sale with Merch"
-	MainEventNormalWithMerch    = "Normal with Merch"
-	MainEventEarlyBirdNoMerch   = "Early Bird No Merch"
-	MainEventPreSaleNoMerch     = "Pre Sale No Merch"
-	MainEventNormalNoMerch      = "Normal No Merch"
+	MainEventEarlyBirdWithMerch = "Early Bird with merchandise bundle"
+	MainEventPreSaleWithMerch   = "Pre Sale with merchandise bundle"
+	MainEventNormalWithMerch    = "Normal with merchandise bundle"
+	MainEventEarlyBirdNoMerch   = "Early Bird without merchandise bundle"
+	MainEventPreSaleNoMerch     = "Pre Sale without merchandise bundle"
+	MainEventNormalNoMerch      = "Normal without merchandise bundle"
 )
 
 const (

@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -75,11 +76,11 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 		return err
 	}
 
-	if time.Now().Before(event.StartDate.Add(-7 * time.Hour)) {
+	if time.Now().Before(event.StartDate) {
 		return dto.ErrMainEventNotYetOpen
 	}
 
-	if time.Now().After(event.EndDate.Add(-7 * time.Hour)) {
+	if time.Now().After(event.EndDate) {
 		return dto.ErrMainEventClosed
 	}
 
@@ -173,11 +174,21 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 		return err
 	}
 
+	var price string
+	if event.Price >= 1000 {
+		price = strconv.Itoa(event.Price)
+		price = price[:len(price)-3] + "." + price[len(price)-3:]
+	}
+
 	var strMail bytes.Buffer
 	if err := tmpl.Execute(&strMail, struct {
-		Name string
+		Name       string
+		TicketType string
+		TotalPrice string
 	}{
-		Name: user.Name,
+		Name:       user.Name,
+		TicketType: event.Name,
+		TotalPrice: price,
 	}); err != nil {
 		return err
 	}
@@ -277,13 +288,25 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 	if err != nil {
 		return dto.MainEventStatusResponse{}, err
 	}
+	early_bird_with_merch, err := s.eventRepo.GetByID(constants.MainEventEarlyBirdWithMerchID)
+	if err != nil {
+		return dto.MainEventStatusResponse{}, err
+	}
 
 	pre_sale, err := s.eventRepo.GetByID(constants.MainEventPreSaleNoMerchID)
 	if err != nil {
 		return dto.MainEventStatusResponse{}, err
 	}
+	pre_sale_with_merch, err := s.eventRepo.GetByID(constants.MainEventPreSaleWithMerchID)
+	if err != nil {
+		return dto.MainEventStatusResponse{}, err
+	}
 
 	normal, err := s.eventRepo.GetByID(constants.MainEventNormalNoMerchID)
+	if err != nil {
+		return dto.MainEventStatusResponse{}, err
+	}
+	normal_with_merch, err := s.eventRepo.GetByID(constants.MainEventNormalWithMerchID)
 	if err != nil {
 		return dto.MainEventStatusResponse{}, err
 	}
@@ -295,18 +318,18 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 			status = dto.MAIN_EVENT_FULL
 		}
 
-		if time.Now().Before(e.StartDate.Add(-7 * time.Hour)) {
+		if time.Now().Before(e.StartDate) {
 			status = dto.MAIN_EVENT_CLOSED
 		}
 
-		if time.Now().After(e.EndDate.Add(-7 * time.Hour)) {
+		if time.Now().After(e.EndDate) {
 			status = dto.MAIN_EVENT_FULL
 		}
 
-		endDateDifference := e.EndDate.Add(-7 * time.Hour).Sub(time.Now())
+		endDateDifference := e.EndDate.Sub(time.Now())
 		endDateTotal := int(endDateDifference.Seconds())
 
-		startDateDifference := e.StartDate.Add(-7 * time.Hour).Sub(time.Now())
+		startDateDifference := e.StartDate.Sub(time.Now())
 		startDateTotal := int(startDateDifference.Seconds())
 
 		return dto.MainEventStatusDetail{
@@ -330,6 +353,18 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 		EarlyBird: preprocess(early_bird),
 		PreSale:   preprocess(pre_sale),
 		Normal:    preprocess(normal),
+	}
+
+	if (early_bird.Capacity-early_bird.Registers)+(early_bird_with_merch.Registers-early_bird_with_merch.Capacity) <= 0 {
+		res.EarlyBird.Status = dto.MAIN_EVENT_FULL
+	}
+
+	if (pre_sale.Capacity-pre_sale.Registers)+(pre_sale_with_merch.Registers-pre_sale_with_merch.Capacity) <= 0 {
+		res.PreSale.Status = dto.MAIN_EVENT_FULL
+	}
+
+	if (normal.Capacity-normal.Registers)+(normal_with_merch.Registers-normal_with_merch.Capacity) <= 0 {
+		res.Normal.Status = dto.MAIN_EVENT_FULL
 	}
 
 	res.EarlyBird.NoMerchID = constants.MainEventEarlyBirdNoMerchID

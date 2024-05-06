@@ -22,9 +22,12 @@
     h1 {
       color: #333;
       font-size: 24px;
+      margin-top: 0px;
       margin-bottom: 20px;
+      padding-left: 13px;
     }
     p {
+      padding-left: 13px;
       color: #666;
       font-size: 16px;
       line-height: 1.5;
@@ -33,21 +36,55 @@
       color: #007bff;
       text-decoration: none;
     }
+    .logo {
+      max-width: 100px;
+      padding-bottom: 0%;
+      margin-bottom: 0px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      margin-left: 13px;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Confirmation Payment</h1>
-    <p>Hello, {{ .Name }}</p>
+    <img src="https://tedxits2024.vercel.app/favicon/android-chrome-512x512.png" alt="Logo" class="logo">
+    <h1>Hello, {{ .Name }}! Your Payment Has Been Received</h1>
     <p>
-      Thank you for your purchase. We've received your payment for the upcoming event.
+      Thank you for your purchase. While your ticket is being processed, here's what we received:
     </p>
+    <table>
+      <tr>
+        <th>Ticket Type</th>
+        <td>{{ .TicketType }}</td>
+      </tr>
+      <tr>
+        <th>Total Price</th>
+        <td>Rp.{{ .TotalPrice }}</td>
+      </tr>
+    </table>
     <p>
-      Your payment is being processed, and we are now awaiting confirmation from our admin team.
+      We are now awaiting confirmation from our admin team.
       Once confirmed, you will receive further email regarding your ticket.
     </p>
     <p>
-      We appreciate your patience and understanding in this process. If you have any questions or concerns, feel free to reach out to us.
+      We appreciate your patience and understanding in this process. 
+      If you have any questions or concerns, feel free to reach out to us.
+      <br>
+      <br>Contact Person:
+      <br>WhatsApp: 085231876869"
+      <br>Line: afriansyah2603
     </p>
     <p>Thank you.</p>
   </div>

@@ -42,11 +42,11 @@ func (s *preEvent2Service) CreatePE2RSVP(ctx context.Context, req dto.PE2RSVPReq
 		return dto.PE2RSVPResponse{}, dto.ErrPE2RSVPFull
 	}
 
-	if time.Now().Before(event.StartDate.Add(-7 * time.Hour)) {
+	if time.Now().Before(event.StartDate) {
 		return dto.PE2RSVPResponse{}, dto.ErrPE2RSVPNotOpen
 	}
 
-	if time.Now().After(event.EndDate.Add(-7 * time.Hour)) {
+	if time.Now().After(event.EndDate) {
 		return dto.PE2RSVPResponse{}, dto.ErrPE2RSVPClosed
 	}
 
@@ -179,11 +179,11 @@ func (s *preEvent2Service) GetPE2RSVPStatus(context.Context) (bool, error) {
 		return false, nil
 	}
 
-	if time.Now().Before(event.StartDate.Add(-7 * time.Hour)) {
+	if time.Now().Before(event.StartDate) {
 		return false, nil
 	}
 
-	if time.Now().After(event.EndDate.Add(-7 * time.Hour)) {
+	if time.Now().After(event.EndDate) {
 		return false, nil
 	}
 
