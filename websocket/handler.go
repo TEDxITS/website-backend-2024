@@ -142,8 +142,8 @@ func (Handler *ticketQueue) Serve(ctx *gin.Context) {
 		NoMerchBasePrice   int `json:"no_merch_price"`
 		WithMerchBasePrice int `json:"with_merch_price"`
 	}{
-		withMerchPrice,
 		noMerchPrice,
+		withMerchPrice,
 	})
 	if err := client.SendTextMessage(string(message)); nil != err {
 		return
