@@ -30,9 +30,9 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &False,
 			Capacity:  110,
 			Registers: 0,
-			EventDate: time.Date(2024, time.April, 24, 12, 0, 0, 0, time.UTC),
-			StartDate: time.Date(2024, time.April, 10, 19, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.April, 18, 00, 0, 0, 0, time.UTC),
+			EventDate: time.Date(2024, time.April, 24, 12, 0, 0, 0, time.Now().UTC().Location()),
+			StartDate: time.Date(2024, time.April, 10, 19, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.April, 18, 00, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventEarlyBirdNoMerchID),
 			Name:      constants.MainEventEarlyBirdNoMerch,
@@ -40,8 +40,8 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &False,
 			Capacity:  constants.MainEventEarlyBirdNoMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2023, time.May, 6, 15, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.May, 7, 15, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.May, 6, 15, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 7, 15, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventPreSaleNoMerchID),
 			Name:      constants.MainEventPreSaleNoMerch,
@@ -49,8 +49,8 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &False,
 			Capacity:  constants.MainEventPreSaleNoMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2024, time.May, 8, 15, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.May, 10, 15, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.May, 8, 15, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 10, 15, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventNormalNoMerchID),
 			Name:      constants.MainEventNormalNoMerch,
@@ -58,8 +58,8 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &False,
 			Capacity:  constants.MainEventNormalNoMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2024, time.May, 15, 12, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.May, 24, 12, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.May, 15, 12, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 24, 12, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventEarlyBirdWithMerchID),
 			Name:      constants.MainEventEarlyBirdWithMerch,
@@ -67,8 +67,8 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &True,
 			Capacity:  constants.MainEventEarlyBirdWithMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2023, time.May, 6, 15, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.May, 7, 15, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.May, 6, 15, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 7, 15, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventPreSaleWithMerchID),
 			Name:      constants.MainEventPreSaleWithMerch,
@@ -76,8 +76,8 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &True,
 			Capacity:  constants.MainEventPreSaleWithMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2024, time.May, 8, 15, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.May, 10, 15, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.May, 8, 15, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 10, 15, 0, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventNormalWithMerchID),
 			Name:      constants.MainEventNormalWithMerch,
@@ -85,8 +85,8 @@ func EventSeeder(db *gorm.DB) error {
 			WithKit:   &True,
 			Capacity:  constants.MainEventNormalWithMerchCapacity,
 			Registers: 0,
-			StartDate: time.Date(2024, time.May, 15, 12, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, time.May, 24, 12, 0, 0, 0, time.UTC),
+			StartDate: time.Date(2024, time.May, 15, 12, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 24, 12, 0, 0, 0, time.Now().UTC().Location()),
 		})
 
 	for _, data := range eventList {

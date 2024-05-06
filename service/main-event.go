@@ -76,11 +76,11 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 		return err
 	}
 
-	if time.Now().Before(event.StartDate) {
+	if time.Now().Before(event.StartDate.Add(-7 * time.Hour)) {
 		return dto.ErrMainEventNotYetOpen
 	}
 
-	if time.Now().After(event.EndDate) {
+	if time.Now().After(event.EndDate.Add(-7 * time.Hour)) {
 		return dto.ErrMainEventClosed
 	}
 
@@ -314,10 +314,6 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 	preprocess := func(e entity.Event) dto.MainEventStatusDetail {
 		status := dto.MAIN_EVENT_OPEN
 
-		if e.Registers >= e.Capacity {
-			status = dto.MAIN_EVENT_FULL
-		}
-
 		if time.Now().Before(e.StartDate) {
 			status = dto.MAIN_EVENT_CLOSED
 		}
@@ -326,27 +322,25 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 			status = dto.MAIN_EVENT_FULL
 		}
 
-		endDateDifference := e.EndDate.Sub(time.Now())
-		endDateTotal := int(endDateDifference.Seconds())
-
-		startDateDifference := e.StartDate.Sub(time.Now())
-		startDateTotal := int(startDateDifference.Seconds())
+		startDateDifference := int(time.Until(e.StartDate.Add(-7 * time.Hour)).Seconds())
+		endDateDifference := int(time.Until(e.EndDate.Add(-7 * time.Hour)).Seconds())
 
 		return dto.MainEventStatusDetail{
 			Status: status,
 			UntilOpen: dto.RemainingTime{
-				Days:    int(endDateTotal / (60 * 60 * 24)),
-				Hours:   int(endDateTotal / (60 * 60) % 24),
-				Minutes: int(endDateTotal/60) % 60,
-				Seconds: int(endDateTotal % 60),
+				Days:    int(startDateDifference / (60 * 60 * 24)),
+				Hours:   int((startDateDifference / (60 * 60)) % 24),
+				Minutes: int((startDateDifference / 60) % 60),
+				Seconds: int(startDateDifference % 60),
 			},
 			UntilClosed: dto.RemainingTime{
-				Days:    int(startDateTotal / (60 * 60 * 24)),
-				Hours:   int(startDateTotal / (60 * 60) % 24),
-				Minutes: int(startDateTotal/60) % 60,
-				Seconds: int(startDateTotal % 60),
+				Days:    int(endDateDifference / (60 * 60 * 24)),
+				Hours:   int((endDateDifference / (60 * 60)) % 24),
+				Minutes: int((endDateDifference / 60) % 60),
+				Seconds: int(endDateDifference % 60),
 			},
 		}
+
 	}
 
 	res := dto.MainEventStatusResponse{

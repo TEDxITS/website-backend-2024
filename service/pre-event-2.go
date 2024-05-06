@@ -179,11 +179,11 @@ func (s *preEvent2Service) GetPE2RSVPStatus(context.Context) (bool, error) {
 		return false, nil
 	}
 
-	if time.Now().Before(event.StartDate) {
+	if time.Now().Before(event.StartDate.Add(-7 * time.Hour)) {
 		return false, nil
 	}
 
-	if time.Now().After(event.EndDate) {
+	if time.Now().After(event.EndDate.Add(-7 * time.Hour)) {
 		return false, nil
 	}
 
