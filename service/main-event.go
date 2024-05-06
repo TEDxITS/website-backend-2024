@@ -314,11 +314,11 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 	preprocess := func(e entity.Event) dto.MainEventStatusDetail {
 		status := dto.MAIN_EVENT_OPEN
 
-		if time.Now().Before(e.StartDate) {
+		if time.Now().Before(e.StartDate.Add(-7 * time.Hour)) {
 			status = dto.MAIN_EVENT_CLOSED
 		}
 
-		if time.Now().After(e.EndDate) {
+		if time.Now().After(e.EndDate.Add(-7 * time.Hour)) {
 			status = dto.MAIN_EVENT_FULL
 		}
 
