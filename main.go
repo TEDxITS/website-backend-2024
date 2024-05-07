@@ -37,9 +37,9 @@ func main() {
 		bucketRepository        repository.BucketRepository        = repository.NewSupabaseBucketRepository(bucket)
 
 		// websocket hub
-		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
-		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
-		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
+		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, 2, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
+		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, 2, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
+		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 2, 2, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
 
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository, roleRepo)

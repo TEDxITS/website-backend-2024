@@ -95,10 +95,10 @@ func (Handler *ticketQueue) Serve(ctx *gin.Context) {
 	}
 
 	// already in queue, (detect using one account to queue multiple times)
-	if Handler.Hub.IsInQueueByUserID(client.UserID) {
-		_ = client.SendTextMessage(dto.ErrWSAlreadyInQueue.Error())
-		return
-	}
+	// if Handler.Hub.IsInQueueByUserID(client.UserID) {
+	// 	_ = client.SendTextMessage(dto.ErrWSAlreadyInQueue.Error())
+	// 	return
+	// }
 
 	// register client to hub for tracking
 	Handler.Register(client)

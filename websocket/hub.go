@@ -34,6 +34,7 @@ type (
 		Transaction    []*Client
 		Waiting        []*Client
 		MaxTransaction int
+		MaxWaiting     int
 
 		Register   chan *Client
 		Unregister chan *Client
@@ -57,11 +58,12 @@ type (
 	}
 )
 
-func RunConnHub(repo repository.EventRepository, max int, noMerchID, withMerchID string) QueueHub {
+func RunConnHub(repo repository.EventRepository, maxT, maxW int, noMerchID, withMerchID string) QueueHub {
 	hub := &queueHub{
 		Transaction:    make([]*Client, 0),
 		Waiting:        make([]*Client, 0),
-		MaxTransaction: max,
+		MaxTransaction: maxT,
+		MaxWaiting:     maxW,
 
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
@@ -99,6 +101,10 @@ func RunConnHub(repo repository.EventRepository, max int, noMerchID, withMerchID
 
 				// if the main event is full, push the client to waiting list
 				if len(hub.Transaction) >= hub.MaxTransaction {
+					// if len(hub.Waiting) >= hub.MaxWaiting {
+					// 	client.Notify(dto.ErrWSWaitingListFull.Error())
+					// 	continue
+					// }
 					hub.PushWaiting(client)
 					continue
 				}

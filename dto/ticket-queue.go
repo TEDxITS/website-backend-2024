@@ -21,6 +21,7 @@ var (
 	ErrWSInvalidCommand    = errors.New("invalid command")
 	ErrWSMainEventFull     = errors.New("main event is full")
 	ErrWSCommunicateWithDB = errors.New("error fetching data")
+	ErrWSWaitingListFull   = errors.New("waiting list is full")
 )
 
 type (

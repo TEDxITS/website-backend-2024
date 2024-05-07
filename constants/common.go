@@ -21,7 +21,7 @@ const (
 	JWT_EXPIRE_TIME_IN_MINUTES = 120
 
 	WSOCKET_AUTH_TIME_LIMIT        = time.Second * time.Duration(10)
-	WSOCKET_TRANSACTION_TIME_LIMIT = (time.Minute * time.Duration(3)) + (time.Second * time.Duration(20))
+	WSOCKET_TRANSACTION_TIME_LIMIT = (time.Minute * time.Duration(3)) + (time.Second * time.Duration(10))
 )
 
 var (
