@@ -14,7 +14,6 @@ import (
 	"github.com/TEDxITS/website-backend-2024/entity"
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/utils"
-	"github.com/TEDxITS/website-backend-2024/websocket"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +33,7 @@ type (
 		userRepo   repository.UserRepository
 		ticketRepo repository.TicketRepository
 		bucketRepo repository.BucketRepository
-		queueHub   []websocket.QueueHub
+		// queueHub   []websocket.QueueHub
 	}
 )
 
@@ -43,30 +42,30 @@ func NewMainEventService(
 	tRepo repository.TicketRepository,
 	eRepo repository.EventRepository,
 	bRepo repository.BucketRepository,
-	qHub []websocket.QueueHub,
+	// qHub []websocket.QueueHub,
 ) MainEventService {
 	return &mainEventService{
 		eventRepo:  eRepo,
 		userRepo:   uRepo,
 		ticketRepo: tRepo,
 		bucketRepo: bRepo,
-		queueHub:   qHub,
+		// queueHub:   qHub,
 	}
 }
 
 func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEventRegister, userID string) error {
-	hub, err := func() (websocket.QueueHub, error) {
-		for _, hub := range s.queueHub {
-			if hub.IsEventHandler(req.EventID) {
-				return hub, nil
-			}
-		}
-		return nil, dto.ErrEventNotFound
-	}()
+	// hub, err := func() (websocket.QueueHub, error) {
+	// 	for _, hub := range s.queueHub {
+	// 		if hub.IsEventHandler(req.EventID) {
+	// 			return hub, nil
+	// 		}
+	// 	}
+	// 	return nil, dto.ErrEventNotFound
+	// }()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
 	event, err := s.eventRepo.GetByID(req.EventID)
 	if err != nil {
@@ -88,14 +87,14 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 		return dto.ErrMainEventFull
 	}
 
-	client := hub.GetClientInTransactionByUserID(userID)
-	if client == nil {
-		return dto.ErrUserNotInTransaction
-	}
+	// client := hub.GetClientInTransactionByUserID(userID)
+	// if client == nil {
+	// 	return dto.ErrUserNotInTransaction
+	// }
 
-	if client.IsWithMerch() != *event.WithKit {
-		return dto.ErrMismatchData
-	}
+	// if client.IsWithMerch() != *event.WithKit {
+	// 	return dto.ErrMismatchData
+	// }
 
 	// validating uploaded file
 	if req.PaymentFile.Size > dto.MB*5 {
@@ -206,7 +205,7 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 
 	// signal the client to exit the handler thread
 	// and sequentially unregister from the hub
-	client.Done(nil)
+	// client.Done(nil)
 
 	return nil
 }

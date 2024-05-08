@@ -13,7 +13,6 @@ import (
 	"github.com/TEDxITS/website-backend-2024/routes"
 	"github.com/TEDxITS/website-backend-2024/service"
 	"github.com/TEDxITS/website-backend-2024/utils/azure"
-	"github.com/TEDxITS/website-backend-2024/websocket"
 	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
@@ -37,16 +36,16 @@ func main() {
 		bucketRepository        repository.BucketRepository        = repository.NewSupabaseBucketRepository(bucket)
 
 		// websocket hub
-		earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
-		preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
-		normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
+		// earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
+		// preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
+		// normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
 
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository, roleRepo)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
 		preEvent2Service     service.PreEvent2Service     = service.NewPreEvent2Service(eventRepository, pe2RSVPRepo)
 		eventService         service.EventService         = service.NewEventService(eventRepository)
-		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository, bucketRepository, []websocket.QueueHub{earlyBirdHub, preSaleHub, normalHub})
+		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository, bucketRepository)
 		storageService       service.StorageService       = service.NewStorageService(bucketRepository)
 
 		// controllers
@@ -58,9 +57,9 @@ func main() {
 		storageController       controller.StorageController       = controller.NewStorageController(storageService)
 
 		// websocket handler
-		earlyBirdQueue websocket.TicketQueue = websocket.NewTicketQueue(earlyBirdHub, jwtService)
-		preSaleQueue   websocket.TicketQueue = websocket.NewTicketQueue(preSaleHub, jwtService)
-		normalQueue    websocket.TicketQueue = websocket.NewTicketQueue(normalHub, jwtService)
+		// earlyBirdQueue websocket.TicketQueue = websocket.NewTicketQueue(earlyBirdHub, jwtService)
+		// preSaleQueue   websocket.TicketQueue = websocket.NewTicketQueue(preSaleHub, jwtService)
+		// normalQueue    websocket.TicketQueue = websocket.NewTicketQueue(normalHub, jwtService)
 	)
 
 	server := gin.Default()
@@ -73,7 +72,7 @@ func main() {
 	routes.Event(server, eventController, jwtService)
 	routes.PreEvent2(server, preEvent2Controller, jwtService)
 	routes.MainEvent(server, mainEventController, jwtService)
-	routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
+	// routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
 	routes.Storage(server, storageController, jwtService)
 
 	// https://github.com/gin-contrib/cors
