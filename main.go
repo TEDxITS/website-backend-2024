@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/TEDxITS/website-backend-2024/config"
 	"github.com/TEDxITS/website-backend-2024/constants"
@@ -21,6 +23,8 @@ import (
 )
 
 func main() {
+	rand.Seed(time.Now().Unix())
+
 	var (
 		db         *gorm.DB               = config.SetUpDatabaseConnection()
 		jwtService config.JWTService      = config.NewJWTService()
