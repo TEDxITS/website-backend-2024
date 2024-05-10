@@ -77,7 +77,7 @@ func EventSeeder(db *gorm.DB) error {
 			Capacity:  constants.MainEventPreSaleWithMerchCapacity,
 			Registers: 0,
 			StartDate: time.Date(2024, time.May, 9, 15, 0, 0, 0, time.Now().UTC().Location()),
-			EndDate:   time.Date(2024, time.May, 10, 15, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 12, 23, 59, 59, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventNormalWithMerchID),
 			Name:      constants.MainEventNormalWithMerch,
