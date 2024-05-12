@@ -393,15 +393,15 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 		Normal:    preprocess(normal),
 	}
 
-	if (early_bird.Capacity-early_bird.Registers)+(early_bird_with_merch.Registers-early_bird_with_merch.Capacity) <= 0 {
+	if (early_bird.Capacity-early_bird.Registers)+(early_bird_with_merch.Capacity-early_bird_with_merch.Registers) <= 0 {
 		res.EarlyBird.Status = dto.MAIN_EVENT_FULL
 	}
 
-	if (pre_sale.Capacity-pre_sale.Registers)+(pre_sale_with_merch.Registers-pre_sale_with_merch.Capacity) <= 0 {
+	if (pre_sale.Capacity-pre_sale.Registers)+(pre_sale_with_merch.Capacity-pre_sale_with_merch.Registers) <= 0 {
 		res.PreSale.Status = dto.MAIN_EVENT_FULL
 	}
 
-	if (normal.Capacity-normal.Registers)+(normal_with_merch.Registers-normal_with_merch.Capacity) <= 0 {
+	if (normal.Capacity-normal.Registers)+(normal_with_merch.Capacity-normal_with_merch.Registers) <= 0 {
 		res.Normal.Status = dto.MAIN_EVENT_FULL
 	}
 
