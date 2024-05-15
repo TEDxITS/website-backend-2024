@@ -87,7 +87,17 @@ func EventSeeder(db *gorm.DB) error {
 			Registers: 0,
 			StartDate: time.Date(2024, time.May, 16, 15, 0, 0, 0, time.Now().UTC().Location()),
 			EndDate:   time.Date(2024, time.May, 24, 12, 0, 0, 0, time.Now().UTC().Location()),
-		})
+		}, entity.Event{
+			ID:        uuid.MustParse(constants.PreEvent3ID),
+			Name:      constants.PE3Name,
+			Price:     0,
+			WithKit:   &False,
+			Capacity:  999,
+			Registers: 0,
+			StartDate: time.Date(2024, time.May, 19, 15, 0, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.May, 24, 12, 0, 0, 0, time.Now().UTC().Location()),
+		},
+	)
 
 	for _, data := range eventList {
 		event := entity.Event{}

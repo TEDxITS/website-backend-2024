@@ -2,6 +2,7 @@ package constants
 
 const (
 	PE2Name                     = "Pre-event 2"
+	PE3Name                     = "Pre-event 3"
 	MainEventEarlyBirdWithMerch = "Early Bird with merchandise bundle"
 	MainEventPreSaleWithMerch   = "Pre Sale with merchandise bundle"
 	MainEventNormalWithMerch    = "Normal with merchandise bundle"
@@ -12,7 +13,7 @@ const (
 
 const (
 	MainEventEarlyBirdWithMerchCapacity = 7
-	MainEventPreSaleWithMerchCapacity   = 13
+	MainEventPreSaleWithMerchCapacity   = 14
 	MainEventNormalWithMerchCapacity    = 20
 	MainEventEarlyBirdNoMerchCapacity   = 13
 	MainEventPreSaleNoMerchCapacity     = 57
@@ -27,4 +28,5 @@ const (
 	MainEventPreSaleWithMerchID   = "edef91cb-f43f-4a30-a5f0-43acd0d6853f"
 	MainEventNormalWithMerchID    = "0594226b-c314-42e7-9743-c76fdd6b7099"
 	PreEvent2ID                   = "7de24efe-0aec-469a-bf0c-8fa8cae3ff3f"
+	PreEvent3ID                   = "d436ff9d-5956-48a5-acb1-1e96d94fc3c4"
 )

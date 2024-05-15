@@ -39,11 +39,6 @@ func main() {
 		ticketRepository        repository.TicketRepository        = repository.NewTicketRepository(db)
 		bucketRepository        repository.BucketRepository        = repository.NewSupabaseBucketRepository(bucket)
 
-		// websocket hub
-		// earlyBirdHub websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventEarlyBirdNoMerchID, constants.MainEventEarlyBirdWithMerchID)
-		// preSaleHub   websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventPreSaleNoMerchID, constants.MainEventPreSaleWithMerchID)
-		// normalHub    websocket.QueueHub = websocket.RunConnHub(eventRepository, 4, constants.MainEventNormalNoMerchID, constants.MainEventNormalWithMerchID)
-
 		// services
 		userService          service.UserService          = service.NewUserService(userRepository, roleRepo)
 		linkShortenerService service.LinkShortenerService = service.NewLinkShortenerService(linkShortenerRepository)
@@ -51,6 +46,7 @@ func main() {
 		eventService         service.EventService         = service.NewEventService(eventRepository)
 		mainEventService     service.MainEventService     = service.NewMainEventService(userRepository, ticketRepository, eventRepository, bucketRepository)
 		storageService       service.StorageService       = service.NewStorageService(bucketRepository)
+		preEvent3Service     service.PreEvent3Service     = service.NewPreEvent3Service(userRepository, ticketRepository, eventRepository, bucketRepository)
 
 		// controllers
 		userController          controller.UserController          = controller.NewUserController(userService, jwtService)
@@ -59,11 +55,7 @@ func main() {
 		preEvent2Controller     controller.PreEvent2Controller     = controller.NewPreEvent2Controller(preEvent2Service)
 		mainEventController     controller.MainEventController     = controller.NewMainEventController(mainEventService)
 		storageController       controller.StorageController       = controller.NewStorageController(storageService)
-
-		// websocket handler
-		// earlyBirdQueue websocket.TicketQueue = websocket.NewTicketQueue(earlyBirdHub, jwtService)
-		// preSaleQueue   websocket.TicketQueue = websocket.NewTicketQueue(preSaleHub, jwtService)
-		// normalQueue    websocket.TicketQueue = websocket.NewTicketQueue(normalHub, jwtService)
+		preEvent3Controller     controller.PreEvent3Controller     = controller.NewPreEvent3Controller(preEvent3Service)
 	)
 
 	server := gin.Default()
@@ -76,8 +68,8 @@ func main() {
 	routes.Event(server, eventController, jwtService)
 	routes.PreEvent2(server, preEvent2Controller, jwtService)
 	routes.MainEvent(server, mainEventController, jwtService)
-	// routes.TicketQueue(server, earlyBirdQueue, preSaleQueue, normalQueue)
 	routes.Storage(server, storageController, jwtService)
+	routes.PreEvent3(server, preEvent3Controller, jwtService)
 
 	// https://github.com/gin-contrib/cors
 	// https://stackoverflow.com/questions/76196547/websocket-returning-403-every-time
