@@ -14,7 +14,7 @@ const (
 const (
 	MainEventEarlyBirdWithMerchCapacity = 7
 	MainEventPreSaleWithMerchCapacity   = 14
-	MainEventNormalWithMerchCapacity    = 30
+	MainEventNormalWithMerchCapacity    = 28
 	MainEventEarlyBirdNoMerchCapacity   = 13
 	MainEventPreSaleNoMerchCapacity     = 57
 	MainEventNormalNoMerchCapacity      = 95
