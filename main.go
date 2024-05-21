@@ -10,7 +10,6 @@ import (
 	"github.com/TEDxITS/website-backend-2024/constants"
 	"github.com/TEDxITS/website-backend-2024/controller"
 	"github.com/TEDxITS/website-backend-2024/middleware"
-	"github.com/TEDxITS/website-backend-2024/migrations/seeder"
 	"github.com/TEDxITS/website-backend-2024/repository"
 	"github.com/TEDxITS/website-backend-2024/routes"
 	"github.com/TEDxITS/website-backend-2024/service"
@@ -78,7 +77,7 @@ func main() {
 	config.AllowCredentials = true
 	server.Use(cors.New(config))
 
-	// database seeding, update existing data or create if not found
+	database seeding, update existing data or create if not found
 	if err := seeder.RunSeeders(db); err != nil {
 		log.Fatalf("error migration seeder: %v", err)
 		return

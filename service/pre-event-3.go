@@ -20,6 +20,8 @@ type (
 	PreEvent3Service interface {
 		RegisterPE3(dto.PE3RSVPRegister, string) error
 		GetStatus() (dto.PE3RSVPStatus, error)
+		GetPE3Paginated(dto.PaginationQuery) (dto.TicketPaginationResponse, error)
+		GetPE3Counter() (dto.TicketCounter, error)
 	}
 
 	preEvent3Service struct {
@@ -186,5 +188,61 @@ func (s *preEvent3Service) GetStatus() (dto.PE3RSVPStatus, error) {
 
 	return dto.PE3RSVPStatus{
 		Status: &status,
+	}, nil
+}
+
+func (s *preEvent3Service) GetPE3Counter() (dto.TicketCounter, error) {
+	total, confirmed_payments, checked_ins, err := s.ticketRepo.CountPE3()
+	if err != nil {
+		return dto.TicketCounter{}, err
+	}
+
+	return dto.TicketCounter{
+		Total:             total,
+		ConfirmedPayments: confirmed_payments,
+		CheckedIns:        checked_ins,
+	}, nil
+}
+
+func (s *preEvent3Service) GetPE3Paginated(req dto.PaginationQuery) (dto.TicketPaginationResponse, error) {
+	var limit int
+	var page int
+
+	limit = req.PerPage
+	if limit <= 0 {
+		limit = constants.ENUM_PAGINATION_LIMIT
+	}
+
+	page = req.Page
+	if page <= 0 {
+		page = constants.ENUM_PAGINATION_PAGE
+	}
+
+	tickets, maxPage, count, err := s.ticketRepo.JoinGetAllPaginationPE3(req.Search, limit, page)
+	if err != nil {
+		return dto.TicketPaginationResponse{}, err
+	}
+
+	var result []dto.MainEventPaginationData
+	for _, t := range tickets {
+		result = append(result, dto.MainEventPaginationData{
+			ID:        t.TicketID,
+			Name:      t.User.Name,
+			Email:     t.User.Email,
+			Confirmed: *t.PaymentConfirmed,
+			CheckedIn: *t.CheckedIn,
+			EventName: t.Event.Name,
+			Price:     t.Event.Price,
+		})
+	}
+
+	return dto.TicketPaginationResponse{
+		Data: result,
+		PaginationMetadata: dto.PaginationMetadata{
+			Page:    page,
+			PerPage: limit,
+			MaxPage: maxPage,
+			Count:   count,
+		},
 	}, nil
 }

@@ -78,7 +78,7 @@ type (
 		Price     int    `json:"price" form:"price"`
 	}
 
-	MainEventPaginationResponse struct {
+	TicketPaginationResponse struct {
 		Data []MainEventPaginationData `json:"data"`
 		PaginationMetadata
 	}
@@ -100,7 +100,7 @@ type (
 		RegisterDate time.Time `json:"registerdate" form:"registerdate"`
 	}
 
-	MainEventCounter struct {
+	TicketCounter struct {
 		Total             int64 `json:"total" form:"total"`
 		ConfirmedPayments int64 `json:"confirmed_payments" form:"confirmed_payments"`
 		CheckedIns        int64 `json:"checked_ins" form:"checked_ins"`

@@ -90,7 +90,7 @@ func EventSeeder(db *gorm.DB) error {
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.PreEvent3ID),
 			Name:      constants.PE3Name,
-			Price:     0,
+			Price:     15000,
 			WithKit:   &False,
 			Capacity:  999,
 			Registers: 0,

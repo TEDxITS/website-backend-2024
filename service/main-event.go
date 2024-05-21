@@ -23,9 +23,9 @@ type (
 		ConfirmPayment(context.Context, dto.MainEventConfirmPaymentRequest) error
 		CheckIn(context.Context, dto.MainEventCheckInRequest) error
 		GetStatus(context.Context) (dto.MainEventStatusResponse, error)
-		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.MainEventPaginationResponse, error)
+		GetMainEventPaginated(context.Context, dto.PaginationQuery) (dto.TicketPaginationResponse, error)
 		GetMainEventDetail(context.Context, string) (dto.MainEventResponse, error)
-		GetMainEventCounter(context.Context) (dto.MainEventCounter, error)
+		GetMainEventCounter(context.Context) (dto.TicketCounter, error)
 	}
 
 	mainEventService struct {
@@ -415,7 +415,7 @@ func (s *mainEventService) GetStatus(ctx context.Context) (dto.MainEventStatusRe
 	return res, nil
 }
 
-func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.MainEventPaginationResponse, error) {
+func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.PaginationQuery) (dto.TicketPaginationResponse, error) {
 	var limit int
 	var page int
 
@@ -429,9 +429,9 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 		page = constants.ENUM_PAGINATION_PAGE
 	}
 
-	tickets, maxPage, count, err := s.ticketRepo.JoinGetAllPagination(req.Search, limit, page)
+	tickets, maxPage, count, err := s.ticketRepo.JoinGetAllPaginationME(req.Search, limit, page)
 	if err != nil {
-		return dto.MainEventPaginationResponse{}, err
+		return dto.TicketPaginationResponse{}, err
 	}
 
 	var result []dto.MainEventPaginationData
@@ -447,7 +447,7 @@ func (s *mainEventService) GetMainEventPaginated(ctx context.Context, req dto.Pa
 		})
 	}
 
-	return dto.MainEventPaginationResponse{
+	return dto.TicketPaginationResponse{
 		Data: result,
 		PaginationMetadata: dto.PaginationMetadata{
 			Page:    page,
@@ -492,23 +492,13 @@ func (s *mainEventService) GetMainEventDetail(ctx context.Context, id string) (d
 	}, nil
 }
 
-func (s *mainEventService) GetMainEventCounter(ctx context.Context) (dto.MainEventCounter, error) {
-	total, err := s.ticketRepo.CountTotal()
+func (s *mainEventService) GetMainEventCounter(ctx context.Context) (dto.TicketCounter, error) {
+	total, confirmed_payments, checked_ins, err := s.ticketRepo.CountME()
 	if err != nil {
-		return dto.MainEventCounter{}, err
+		return dto.TicketCounter{}, err
 	}
 
-	confirmed_payments, err := s.ticketRepo.CountConfirmedPayments()
-	if err != nil {
-		return dto.MainEventCounter{}, err
-	}
-
-	checked_ins, err := s.ticketRepo.CountCheckedIns()
-	if err != nil {
-		return dto.MainEventCounter{}, err
-	}
-
-	return dto.MainEventCounter{
+	return dto.TicketCounter{
 		Total:             total,
 		ConfirmedPayments: confirmed_payments,
 		CheckedIns:        checked_ins,
