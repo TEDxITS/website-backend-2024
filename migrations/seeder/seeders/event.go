@@ -54,7 +54,7 @@ func EventSeeder(db *gorm.DB) error {
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventNormalNoMerchID),
 			Name:      constants.MainEventNormalNoMerch,
-			Price:     130000,
+			Price:     115000,
 			WithKit:   &False,
 			Capacity:  constants.MainEventNormalNoMerchCapacity,
 			Registers: 0,
@@ -81,7 +81,7 @@ func EventSeeder(db *gorm.DB) error {
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventNormalWithMerchID),
 			Name:      constants.MainEventNormalWithMerch,
-			Price:     155000,
+			Price:     145000,
 			WithKit:   &True,
 			Capacity:  constants.MainEventNormalWithMerchCapacity,
 			Registers: 0,

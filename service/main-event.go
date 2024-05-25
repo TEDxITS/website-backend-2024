@@ -163,45 +163,47 @@ func (s *mainEventService) RegisterMainEvent(ctx context.Context, req dto.MainEv
 		return err
 	}
 
-	readHtml, err := os.ReadFile("./utils/template/mail_payment_received.html")
-	if err != nil {
-		return err
-	}
+	go func() {
+		readHtml, err := os.ReadFile("./utils/template/mail_payment_received.html")
+		if err != nil {
+			return
+		}
 
-	tmpl, err := template.New("custom").Parse(string(readHtml))
-	if err != nil {
-		return err
-	}
+		tmpl, err := template.New("custom").Parse(string(readHtml))
+		if err != nil {
+			return
+		}
 
-	var price string
-	if event.Price >= 1000 {
-		price = strconv.Itoa(event.Price)
-		price = price[:len(price)-3] + "." + price[len(price)-3:]
-	}
+		var price string
+		if event.Price >= 1000 {
+			price = strconv.Itoa(event.Price)
+			price = price[:len(price)-3] + "." + price[len(price)-3:]
+		}
 
-	var strMail bytes.Buffer
-	if err := tmpl.Execute(&strMail, struct {
-		Name       string
-		TicketType string
-		TotalPrice string
-	}{
-		Name:       user.Name,
-		TicketType: event.Name,
-		TotalPrice: price,
-	}); err != nil {
-		return err
-	}
+		var strMail bytes.Buffer
+		if err := tmpl.Execute(&strMail, struct {
+			Name       string
+			TicketType string
+			TotalPrice string
+		}{
+			Name:       user.Name,
+			TicketType: event.Name,
+			TotalPrice: price,
+		}); err != nil {
+			return
+		}
 
-	emailData := utils.Email{
-		Email:   user.Email,
-		Subject: "Payment Received",
-		Body:    strMail.String(),
-	}
+		emailData := utils.Email{
+			Email:   user.Email,
+			Subject: "Payment Received",
+			Body:    strMail.String(),
+		}
 
-	err = utils.SendMail(emailData)
-	if err != nil {
-		return dto.ErrSendEmail
-	}
+		err = utils.SendMail(emailData)
+		if err != nil {
+			return
+		}
+	}()
 
 	// signal the client to exit the handler thread
 	// and sequentially unregister from the hub
@@ -216,10 +218,10 @@ func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEvent
 		return dto.ErrTicketNotFound
 	}
 
-	event, err := s.eventRepo.GetByID(ticket.EventID)
-	if err != nil {
-		return dto.ErrEventNotFound
-	}
+	// event, err := s.eventRepo.GetByID(ticket.EventID)
+	// if err != nil {
+	// 	return dto.ErrEventNotFound
+	// }
 
 	user, err := s.userRepo.GetUserById(ticket.UserID)
 	if err != nil {
@@ -233,9 +235,17 @@ func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEvent
 		return err
 	}
 
-	readHtml, err := os.ReadFile("./utils/template/mail_payment_received.html")
+	readHtml, err := os.ReadFile("./utils/template/mail_confirmation_payment.html")
 	if err != nil {
 		return err
+	}
+
+	data := struct {
+		Name     string
+		TicketID string
+	}{
+		Name:     user.Name,
+		TicketID: ticket.TicketID,
 	}
 
 	tmpl, err := template.New("custom").Parse(string(readHtml))
@@ -243,28 +253,14 @@ func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEvent
 		return err
 	}
 
-	var price string
-	if event.Price >= 1000 {
-		price = strconv.Itoa(event.Price)
-		price = price[:len(price)-3] + "." + price[len(price)-3:]
-	}
-
 	var strMail bytes.Buffer
-	if err := tmpl.Execute(&strMail, struct {
-		Name       string
-		TicketType string
-		TotalPrice string
-	}{
-		Name:       user.Name,
-		TicketType: event.Name,
-		TotalPrice: price,
-	}); err != nil {
+	if err := tmpl.Execute(&strMail, data); err != nil {
 		return err
 	}
 
 	emailData := utils.Email{
 		Email:   user.Email,
-		Subject: "Payment Received",
+		Subject: "Confirmation Payment",
 		Body:    strMail.String(),
 	}
 
@@ -272,41 +268,6 @@ func (s *mainEventService) ConfirmPayment(ctx context.Context, req dto.MainEvent
 	if err != nil {
 		return dto.ErrSendEmail
 	}
-
-	// readHtml, err := os.ReadFile("./utils/template/mail_confirmation_payment.html")
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	// data := struct {
-	// 	Name     string
-	// 	TicketID string
-	// }{
-	// 	Name:     user.Name,
-	// 	TicketID: ticket.TicketID,
-	// }
-
-	// tmpl, err := template.New("custom").Parse(string(readHtml))
-	// if err != nil {
-	// 	return err
-	// }
-
-	// var strMail bytes.Buffer
-	// if err := tmpl.Execute(&strMail, data); err != nil {
-	// 	return err
-	// }
-
-	// emailData := utils.Email{
-	// 	Email:   user.Email,
-	// 	Subject: "Confirmation Payment",
-	// 	Body:    strMail.String(),
-	// }
-
-	// err = utils.SendMail(emailData)
-	// if err != nil {
-	// 	return dto.ErrSendEmail
-	// }
 
 	return nil
 }

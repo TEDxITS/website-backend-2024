@@ -14,10 +14,10 @@ const (
 const (
 	MainEventEarlyBirdWithMerchCapacity = 7
 	MainEventPreSaleWithMerchCapacity   = 14
-	MainEventNormalWithMerchCapacity    = 28
+	MainEventNormalWithMerchCapacity    = 20
 	MainEventEarlyBirdNoMerchCapacity   = 13
 	MainEventPreSaleNoMerchCapacity     = 57
-	MainEventNormalNoMerchCapacity      = 95
+	MainEventNormalNoMerchCapacity      = 53
 )
 
 const (

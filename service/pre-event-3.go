@@ -127,45 +127,47 @@ func (s *preEvent3Service) RegisterPE3(req dto.PE3RSVPRegister, userID string) e
 		return err
 	}
 
-	readHtml, err := os.ReadFile("./utils/template/mail_payment_received.html")
-	if err != nil {
-		return err
-	}
+	go func() {
+		readHtml, err := os.ReadFile("./utils/template/mail_payment_received.html")
+		if err != nil {
+			return
+		}
 
-	tmpl, err := template.New("custom").Parse(string(readHtml))
-	if err != nil {
-		return err
-	}
+		tmpl, err := template.New("custom").Parse(string(readHtml))
+		if err != nil {
+			return
+		}
 
-	var price string
-	if event.Price >= 1000 {
-		price = strconv.Itoa(event.Price)
-		price = price[:len(price)-3] + "." + price[len(price)-3:]
-	}
+		var price string
+		if event.Price >= 1000 {
+			price = strconv.Itoa(event.Price)
+			price = price[:len(price)-3] + "." + price[len(price)-3:]
+		}
 
-	var strMail bytes.Buffer
-	if err := tmpl.Execute(&strMail, struct {
-		Name       string
-		TicketType string
-		TotalPrice string
-	}{
-		Name:       user.Name,
-		TicketType: event.Name,
-		TotalPrice: price,
-	}); err != nil {
-		return err
-	}
+		var strMail bytes.Buffer
+		if err := tmpl.Execute(&strMail, struct {
+			Name       string
+			TicketType string
+			TotalPrice string
+		}{
+			Name:       user.Name,
+			TicketType: event.Name,
+			TotalPrice: price,
+		}); err != nil {
+			return
+		}
 
-	emailData := utils.Email{
-		Email:   user.Email,
-		Subject: "Payment Received",
-		Body:    strMail.String(),
-	}
+		emailData := utils.Email{
+			Email:   user.Email,
+			Subject: "Payment Received",
+			Body:    strMail.String(),
+		}
 
-	err = utils.SendMail(emailData)
-	if err != nil {
-		return dto.ErrSendEmail
-	}
+		err = utils.SendMail(emailData)
+		if err != nil {
+			return
+		}
+	}()
 
 	return nil
 }
