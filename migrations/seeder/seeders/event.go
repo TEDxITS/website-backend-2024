@@ -59,7 +59,7 @@ func EventSeeder(db *gorm.DB) error {
 			Capacity:  constants.MainEventNormalNoMerchCapacity,
 			Registers: 0,
 			StartDate: time.Date(2024, time.May, 16, 19, 0, 0, 0, time.Now().UTC().Location()),
-			EndDate:   time.Date(2024, time.May, 31, 19, 40, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.June, 01, 23, 59, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.MainEventEarlyBirdWithMerchID),
 			Name:      constants.MainEventEarlyBirdWithMerch,
@@ -86,7 +86,7 @@ func EventSeeder(db *gorm.DB) error {
 			Capacity:  constants.MainEventNormalWithMerchCapacity,
 			Registers: 0,
 			StartDate: time.Date(2024, time.May, 16, 15, 0, 0, 0, time.Now().UTC().Location()),
-			EndDate:   time.Date(2024, time.May, 31, 19, 40, 0, 0, time.Now().UTC().Location()),
+			EndDate:   time.Date(2024, time.June, 01, 23, 59, 0, 0, time.Now().UTC().Location()),
 		}, entity.Event{
 			ID:        uuid.MustParse(constants.PreEvent3ID),
 			Name:      constants.PE3Name,
